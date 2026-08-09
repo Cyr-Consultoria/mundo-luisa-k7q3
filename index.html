@@ -213,6 +213,34 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .avCard i{font-size:13px;opacity:.85;font-style:normal;line-height:1.3;margin-top:4px;padding-right:40px}
 
 #rpgJogo{display:none}
+#rpgMini{position:absolute;inset:0;z-index:8;display:none;place-items:center;padding:8px;
+  background:rgba(20,14,32,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#rpgMini.on{display:grid;animation:fadeIn var(--dur-med) var(--ease-out) both}
+.miniBox{width:100%;max-width:440px;text-align:center;color:#fff;
+  animation:winIn var(--dur-slow) var(--ease-spring) both}
+.miniT{font-size:clamp(14px,3.4vw,18px);font-weight:900;letter-spacing:-.01em;margin-bottom:2px}
+.miniSub{font-size:clamp(11px,2.8vw,14px);opacity:.85;font-weight:700;margin-bottom:8px;min-height:1.2em}
+.miniLuzes{display:flex;gap:2.2%;justify-content:center;margin-bottom:8px}
+.miniLuzes.wrap{flex-wrap:wrap;gap:6px}
+.lz{width:17%;max-width:70px;aspect-ratio:1;border:3px solid rgba(255,255,255,.35);border-radius:16px;
+  cursor:pointer;filter:brightness(.55);transition:filter 90ms var(--ease-out),transform var(--dur-fast) var(--ease-out);
+  display:grid;place-items:center;font:inherit;font-weight:900;color:rgba(0,0,0,.55);font-size:11px}
+.lz.on{filter:brightness(1.35);transform:scale(1.09)}
+.lz:active{transform:scale(.93)}
+.lz.cor4{width:44%;max-width:150px;aspect-ratio:2.4;border-radius:14px;font-size:13px}
+.lz.cor4.ok{filter:brightness(1.3);border-color:#fff}
+.miniGrid{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:3px;
+  width:min(64vw,240px);aspect-ratio:1;margin:0 auto 10px;background:rgba(255,255,255,.12);
+  padding:3px;border-radius:12px}
+.pz{background-color:#fff;border-radius:6px;cursor:pointer;background-repeat:no-repeat;
+  transition:transform var(--dur-fast) var(--ease-out)}
+.pz:active{transform:scale(.94)} .pz.vazio{background:transparent;cursor:default}
+.miniAcoes{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.miniAcoes.col{flex-direction:column;align-items:center}
+.miniAcoes .btn{min-height:40px;font-size:14px}
+.miniNota{font-size:12px;opacity:.65;margin:10px 0 0}
+.avOk{position:absolute;bottom:10px;right:12px;font-size:11px;font-style:normal;font-weight:800;
+  background:rgba(255,255,255,.16);padding:3px 8px;border-radius:999px}
 .rpgObjBar{max-width:640px;margin:0 auto 12px;background:#fff;border-radius:18px;padding:10px 14px;
   box-shadow:var(--sombra);text-align:center;
   animation:cardIn var(--dur-med) var(--ease-out) both}
@@ -357,7 +385,16 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
   <!-- AVENTURA (RPG) -->
   <section class="view" id="vRpg">
     <div id="rpgMenuWrap">
-      <p style="text-align:center;font-size:14px;opacity:.75;margin:0 0 14px">Escolha um capítulo da aventura</p>
+      <p style="text-align:center;font-size:14px;opacity:.75;margin:0 0 10px">Escolha a dificuldade</p>
+      <div class="chips" id="rpgDifChips">
+        <button class="chip on" data-d="facil">😊 Fácil</button>
+        <button class="chip" data-d="medio">🙂 Médio</button>
+        <button class="chip" data-d="dificil">😤 Difícil</button>
+      </div>
+      <p style="text-align:center;font-size:12.5px;opacity:.62;margin:0 0 16px;line-height:1.4">
+        <b>Fácil</b>: seta guia, dicas sem limite · <b>Médio</b>: 3 dicas, sem seta ·
+        <b>Difícil</b>: sem dicas, sem seta, desafios maiores
+      </p>
       <div id="rpgMenu"></div>
     </div>
     <div id="rpgJogo">
@@ -368,6 +405,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <div class="rpgTela">
         <canvas id="rpgCanvas" width="240" height="160"></canvas>
         <div id="rpgAviso"></div>
+        <div id="rpgMini"></div>
         <div id="rpgDialogo">
           <div class="rpgRetrato"></div>
           <div style="flex:1">
@@ -393,8 +431,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
         <button class="btn" id="rpgRecomecar">🔄 Recomeçar</button>
       </div>
       <p style="text-align:center;font-size:13px;opacity:.7;margin-top:10px">
-        Siga a <b style="color:#C99A00">seta amarela</b>. Use ▲▼◀▶ para andar e <b>A</b> para falar, pegar e empurrar.<br>
-        Travou? Aperte <b>💡 Dica</b>.
+        Use ▲▼◀▶ para andar e <b>A</b> para falar, pegar, empurrar e entrar nos desafios.
       </p>
     </div>
   </section>
@@ -766,568 +803,879 @@ function salvarArte(){
 document.getElementById('saveFecha').addEventListener('click',()=>document.getElementById('saveWrap').classList.remove('on'));
 
 /* =================== 5) AVENTURA (RPG) =================== */
-const ATLAS_URL = "data:image/png;base64,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";
+const ATLAS_URL = "data:image/png;base64,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";
 /* ==================================================================
-   MOTOR RPG — Mundo da Luísa
-   Pixel art 16-bit, top-down. Arquitetura multi-aventura.
+   MOTOR RPG — Mundo da Luísa  ·  v2
+   Pixel art 16-bit top-down · 5 capítulos · 3 níveis de dificuldade
    ================================================================== */
 const RPG = (() => {
-  const TS = 16, VW = 240, VH = 160;          // tile size, viewport interno
-  const CH_W = 16, CH_H = 24;                  // sprite de personagem
+  const TS=16, VW=240, VH=160, CH_W=16, CH_H=24;
 
-  // índices no atlas — personagens (linha 0) e tiles (linha 1)
-  const CH = { luisa:{down:0,up:2,left:4,right:6}, mel:8, tobias:10, vovo:12 };
-  const T  = { grama:0, grama2:1, caminho:2, arvore:3, arbusto:4, agua:5, agua2:6,
-               parede:7, janela:8, porta:9, telE:10, telM:11, telD:12,
-               caixote:13, cerca:14, flor:15, sino:16, bola:17, novelo:18, estrela:19, brilho:20 };
+  const CH = { luisa:{down:0,up:2,left:4,right:6}, mel:8, tobias:10, vovo:12, sombra:14 };
+  const T = { grama:0,grama2:1,caminho:2,arvore:3,arbusto:4,agua:5,agua2:6,parede:7,janela:8,porta:9,
+    telE:10,telM:11,telD:12,caixote:13,cerca:14,flor:15,sino:16,bola:17,novelo:18,estrela:19,brilho:20,
+    chaoFlo:21,arvEsc:22,vagOff:23,vagOn:24, areia:25,ponte:26,ponteQ:27,pedra:28,
+    chaoMont:29,rocha:30,svOff:31,svOn:32, pisoCas:33,paredeCas:34,portaCas:35,portaCasA:36,tocha:37,cristal:38 };
 
-  // mapa de caracteres → tile
-  const LEGENDA = {
-    '.':T.grama, ',':T.grama2, '=':T.caminho, 'T':T.arvore, 'a':T.arbusto,
-    '~':T.agua, 'P':T.parede, 'J':T.janela, 'D':T.porta,
-    '1':T.telE, '2':T.telM, '3':T.telD, 'C':T.caixote, '#':T.cerca, 'f':T.flor
+  const LEGENDA = {'.':T.grama,',':T.grama2,'=':T.caminho,'T':T.arvore,'a':T.arbusto,'~':T.agua,
+    'P':T.parede,'J':T.janela,'D':T.porta,'1':T.telE,'2':T.telM,'3':T.telD,'#':T.cerca,'f':T.flor,
+    'g':T.chaoFlo,'F':T.arvEsc,'s':T.areia,'b':T.ponte,'B':T.ponteQ,'r':T.pedra,
+    'm':T.chaoMont,'R':T.rocha,'c':T.pisoCas,'W':T.paredeCas,'O':T.portaCas,'o':T.portaCasA,'X':T.tocha};
+  const SOLIDOS = new Set(['T','~','P','J','#','1','2','3','F','B','r','R','W','O','X']);
+  const ANIMADOS = {'~':[T.agua,T.agua2],'B':[T.ponteQ,T.agua2]};
+
+  /* ================== DIFICULDADE ================== */
+  const DIF = {
+    facil:  {nome:'Fácil',   seta:true,  baloes:true,  dicas:99, obj:true,  vel:760, extra:0, grid:3, ordemCores:true},
+    medio:  {nome:'Médio',   seta:false, baloes:true,  dicas:3,  obj:true,  vel:560, extra:0, grid:3, ordemCores:false},
+    dificil:{nome:'Difícil', seta:false, baloes:false, dicas:0,  obj:false, vel:420, extra:1, grid:4, ordemCores:false}
   };
-  const SOLIDOS = new Set(['T','~','P','J','#','1','2','3']);   // D (porta) e C (caixote) têm regra própria
+  let dif = 'facil', dicasRestantes = 99;
+  const D = () => DIF[dif];
 
-  /* ---------------- ATLAS ---------------- */
-  let atlas = null, pronto = false;
-  function carregarAtlas(cb){
-    atlas = new Image();
-    atlas.onload = () => { pronto = true; cb && cb(); };
-    atlas.src = ATLAS_URL;
-  }
+  /* ================== ATLAS ================== */
+  let atlas=null, pronto=false;
+  function carregarAtlas(cb){ atlas=new Image(); atlas.onload=()=>{pronto=true;cb&&cb()}; atlas.src=ATLAS_URL; }
 
-  /* ---------------- AVENTURAS ---------------- */
-  // Cada capítulo é um objeto autocontido. Para criar uma nova aventura,
-  // basta acrescentar outro item em AVENTURAS com seus capítulos.
-  const CAP_VILA = {
-    id:'aurora-1',
-    titulo:'Vila Girassol',
-    subtitulo:'Capítulo 1 · a Cor da Alegria',
-    cor:'#FFD84D',
-    corNome:'amarelo',
+  /* ================== CAPÍTULOS ================== */
+  const CAP1 = {
+    id:'aurora-1', n:1, titulo:'Vila Girassol', subtitulo:'Capítulo 1 · a Cor da Alegria',
+    emoji:'🌻', cor:'#FFD84D',
+    resumo:'O Reino de Aurora perdeu as cores. Ninguém vem salvar — a Luísa é que vai.',
+    objetivo:'Ache as 3 coisas que a vila perdeu',
     mapa:[
-      'TTTTTTTTTTTTTTTTTTTT',
-      'T..,.f.....TT..,...T',
-      'T.111.......f......T',
-      'T.PJP...aa.........T',
-      'T.PDP......,.......T',
-      'T....,.............T',
-      'T..a...........a...T',
-      'T==================T',
-      'T....=.......=.....T',
-      'T.,..=..,....=..a..T',
-      'T.111=.......=.....T',
-      'T.PJP=..........f..T',
-      'T.PDP=..a..........T',
-      'T....=.............T',
-      'T..f.=....TT....,..T',
-      'TTTTTTTTTTTTTTTTTTTT'
-    ],
-    inicio:{x:9,y:8},
-    // caixote empurrável
-    caixote:{x:6,y:3},
-    alvoCaixote:{x:5,y:2},          // embaixo do telhado onde está o sino
-    itens:[
-      {id:'sino',   tile:T.sino,   x:3, y:2, noAlto:true, nome:'o sino',
-       dica:'O sino está lá em cima, no telhado. Preciso alcançar…',
-       pegou:'Peguei o sino! Agora a praça pode tocar de novo.'},
-      {id:'bola',   tile:T.bola,   x:8, y:12, nome:'a bola',
+      'TTTTTTTTTTTTTTTTTTTT','T..,.f.....TT..,...T','T.111.......f......T','T.PJP...aa.........T',
+      'T.PDP......,.......T','T....,.............T','T..a...........a...T','T==================T',
+      'T....=.......=.....T','T.,..=..,....=..a..T','T.111=.......=.....T','T.PJP=..........f..T',
+      'T.PDP=..a..........T','T....=.............T','T..f.=....TT....,..T','TTTTTTTTTTTTTTTTTTTT'],
+    inicio:{x:9,y:8}, caixote:{x:6,y:3}, alvoCaixote:{x:5,y:2}, entrega:{x:9,y:7},
+    entregaTxt:'Leve tudo pro meio da rua e aperte A',
+    metas:[
+      {id:'sino', nome:'sino', icone:'🔔', x:3,y:2, tile:T.sino, acao:'pegar', noAlto:true,
+       dica:'O sino está no telhado — preciso do caixote pra alcançar.',
+       fala:'Peguei o sino! Agora a praça pode tocar de novo.'},
+      {id:'bola', nome:'bola', icone:'⚽', x:8,y:12, tile:T.bola, acao:'pegar',
        dica:'A bola do Tobias caiu no mato, lá embaixo da rua.',
-       pegou:'A bola do Tobias! Ele vai ficar tão feliz.'},
-      {id:'novelo', tile:T.novelo, x:16, y:9, nome:'o novelo',
+       fala:'A bola do Tobias! Ele vai ficar tão feliz.'},
+      {id:'novelo', nome:'novelo', icone:'🧶', x:16,y:9, tile:T.novelo, acao:'pegar',
        dica:'O novelo da Mel rolou pro outro lado da vila, na direita.',
-       pegou:'O novelo da Mel. Ela vai fingir que não ligou.'}
+       fala:'O novelo da Mel. Ela vai fingir que não ligou.'}
     ],
     npcs:[
-      {id:'mel', sprite:CH.mel, x:10, y:8, nome:'MEL', retrato:null, corNome:'#F0B45A',
-       falas:{
+      {id:'mel',sprite:CH.mel,x:10,y:8,nome:'MEL',cor:'#F0B45A',falas:{
         inicio:['Miau. Tudo cinza.','Perdemos o sino, a bola do Tobias e o meu novelo.','Você é pequena demais pra isso.'],
         meio:['Tá… você achou um. Sorte.','Ainda faltam os outros.'],
-        fim:['…tá bom. Você conseguiu.','Não vou dizer que eu duvidei. (miau)']
-       }},
-      {id:'tobias', sprite:CH.tobias, x:14, y:11, nome:'TOBIAS', corNome:'#5AA8F0',
-       falas:{
+        fim:['…tá bom. Você conseguiu.','Não vou dizer que eu duvidei. (miau)']}},
+      {id:'tobias',sprite:CH.tobias,x:14,y:11,nome:'TOBIAS',cor:'#5AA8F0',falas:{
         inicio:['Minha bola sumiu no mato.','Eu tenho medo de ir lá pegar.'],
         meio:['Você tá indo mesmo? Sozinha?'],
-        fim:['Você achou tudo! Você é a mais corajosa da vila.']
-       }},
-      {id:'vovo', sprite:CH.vovo, x:5, y:12, nome:'VOVÓ AURORA', corNome:'#C4A0E8',
-       falas:{
+        fim:['Você achou tudo! Você é a mais corajosa da vila.']}},
+      {id:'vovo',sprite:CH.vovo,x:5,y:12,nome:'VOVÓ AURORA',cor:'#C4A0E8',falas:{
         inicio:['Essa coroa era minha, agora é sua.','Ela não te faz corajosa, minha flor.','Ela só lembra que você já é.'],
         meio:['Continue. Você está indo bem.'],
-        fim:['Eu te dei a coroa. Quem trouxe a cor de volta foi você.']
-       }}
+        fim:['Eu te dei a coroa. Quem trouxe a cor de volta foi você.']}}
     ],
-    // objetivo final: devolver os 3 itens no centro da praça
-    entrega:{x:9,y:7},
-    abertura:[
-      ['LUÍSA','A vila acordou sem cor.'],
-      ['LUÍSA','Todo mundo está esperando alguém aparecer pra resolver.'],
-      ['LUÍSA','Então eu vou lá.'],
-      ['COMO JOGAR','Use as setas ▲▼◀▶ para andar.'],
-      ['COMO JOGAR','Chegue pertinho e aperte A para falar, pegar e empurrar.'],
-      ['COMO JOGAR','A seta amarela mostra pra onde ir.'],
-      ['COMO JOGAR','Perdida? Aperte o botão 💡 Dica quando quiser.']
-    ],
-    final:[
-      ['LUÍSA','O sino, a bola e o novelo. Está tudo aqui.'],
-      ['LUÍSA','Vila Girassol… acorda!'],
-      ['MEL','…miau. Você conseguiu mesmo.']
-    ]
+    abertura:[['LUÍSA','A vila acordou sem cor.'],['LUÍSA','Todo mundo está esperando alguém aparecer pra resolver.'],
+      ['LUÍSA','Então eu vou lá.']],
+    final:[['LUÍSA','O sino, a bola e o novelo. Está tudo aqui.'],['LUÍSA','Vila Girassol… acorda!'],
+      ['MEL','…miau. Você conseguiu mesmo.']]
   };
 
-  const AVENTURAS = [
-    { id:'aurora', titulo:'As Quatro Cores', emoji:'👑',
-      resumo:'O Reino de Aurora perdeu as cores. Ninguém vem salvar — a Luísa é que vai.',
-      caps:[CAP_VILA] }
-  ];
+  const CAP2 = {
+    id:'aurora-2', n:2, titulo:'Floresta Sussurrante', subtitulo:'Capítulo 2 · a Cor da Vida',
+    emoji:'🌲', cor:'#7BD97B', escuro:true,
+    resumo:'O Tobias se perdeu na floresta à noite. Mandaram esperar amanhecer. Ela não esperou.',
+    objetivo:'Acenda os 3 vagalumes e ache o Tobias',
+    mapa:[
+      'FFFFFFFFFFFFFFFFFFFF',
+      'FggggFFggggFFgggggFF',
+      'FggFFggggFFggggFFggF',
+      'FggggggggFggggggggFF',
+      'FFFggggggggFFFgggggF',
+      'FggggFFgggggggggggFF',
+      'FggggggggggFFgggggFF',
+      'FgFFgggggggggggFFggF',
+      'FggggggFFgggggggFFgF',
+      'FgggFgggggggFggggggF',
+      'FFggggggFFggggggggFF',
+      'FgggggggggggFFggggFF',
+      'FggFFgggggggggggggFF',
+      'FgggggggFFggggggggFF',
+      'FgggFFggggggggFgggFF',
+      'FFFFFFFFFFFFFFFFFFFF'
+    ],
+    inicio:{x:2,y:14}, entrega:null,
+    metas:[
+      {id:'v1', nome:'1º vagalume', icone:'✨', x:5,y:11, tile:T.vagOff, tileOn:T.vagOn, acao:'sequencia',
+       cfg:{n:3}, dica:'O primeiro vagalume pisca 3 luzes. Repita na mesma ordem.',
+       antes:'Este vagalume vai piscar. Preciso repetir na mesma ordem.',
+       fala:'Acendeu! A floresta clareou um pouquinho.'},
+      {id:'v2', nome:'2º vagalume', icone:'✨', x:14,y:6, tile:T.vagOff, tileOn:T.vagOn, acao:'sequencia',
+       cfg:{n:4}, dica:'O segundo pisca 4 luzes. Olhe com atenção antes de tocar.',
+       antes:'Esse aqui pisca mais vezes. Calma e atenção.',
+       fala:'Mais luz! Já dá pra enxergar o caminho.'},
+      {id:'v3', nome:'3º vagalume', icone:'✨', x:6,y:3, tile:T.vagOff, tileOn:T.vagOn, acao:'sequencia',
+       cfg:{n:5}, dica:'O último pisca 5 luzes. Se errar, ele repete mais devagar.',
+       antes:'O último. Cinco luzes. Eu consigo.',
+       fala:'A floresta inteira acendeu!'},
+      {id:'achar', nome:'achar o Tobias', icone:'🧒', x:16,y:13, tile:null, acao:'falar', exigeTudo:true,
+       dica:'Com tudo aceso, o Tobias está no canto de baixo à direita da floresta.',
+       fala:'Achei você!'}
+    ],
+    npcs:[
+      {id:'mel',sprite:CH.mel,x:3,y:13,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau! Tá escuro demais.','Vamos voltar. Sério.','…tá bom, eu vou junto. Mas reclamando.'],
+        meio:['Cada luz que você acende, eu tenho menos medo.'],
+        fim:['Você entrou no escuro pra buscar ele. Miau.']}},
+      {id:'tobiasNpc',sprite:CH.tobias,x:16,y:12,nome:'TOBIAS',cor:'#5AA8F0',oculto:true,falas:{
+        inicio:['(encolhido debaixo da árvore)'],meio:['(encolhido debaixo da árvore)'],
+        fim:['Eu tava esperando alguém vir me buscar…']}}
+    ],
+    abertura:[['LUÍSA','A floresta engoliu o Tobias e ninguém quis entrar.'],
+      ['MEL','Espera amanhecer, Luísa.','#F0B45A'],
+      ['LUÍSA','Se eu esperar, ele passa a noite todinha com medo.'],
+      ['LUÍSA','Os vagalumes acendem o caminho. É só repetir o que eles piscam.']],
+    final:[['TOBIAS','Eu tava esperando alguém vir me buscar…'],
+      ['LUÍSA','Eu vim.'],
+      ['LUÍSA','Mas agora a gente sai daqui junto — eu não vou te carregar, você vai andar comigo.'],
+      ['TOBIAS','…tá. Eu consigo andar.']]
+  };
 
-  /* ---------------- ESTADO ---------------- */
-  let cv, ctx, cap, cam={x:0,y:0}, raf=null, rodando=false;
-  let jog = {x:0,y:0,dir:'down',passo:0,andando:false};
-  let caixote = {x:0,y:0};
-  let coletados = new Set();
-  let entregue = false;
-  let dial = null;          // {linhas:[[nome,texto]...], i:0, retrato}
-  let mensagem = null, msgT = 0;
-  let btn = {up:0,down:0,left:0,right:0,a:0};
-  let tempo = 0;
-  let saturacao = 0;        // 0 = cinza · 1 = colorido
-  let falouCom = new Set(); // NPCs já conversados (para o balão "!")
+  const CAP3 = {
+    id:'aurora-3', n:3, titulo:'Lago Espelho', subtitulo:'Capítulo 3 · a Cor da Calma',
+    emoji:'💧', cor:'#35D6D0',
+    resumo:'A ponte quebrou em nove pedaços e afundou. E o lago mostra o reflexo de quem olha.',
+    objetivo:'Fale com o Reflexo e conserte a ponte',
+    mapa:[
+      'TTTTTTTTTTTTTTTTTTTT',
+      'TsssssssssssssssrssT',
+      'TsrssssssssssssssssT',
+      'TssssssssssssrsssrsT',
+      'T~~~~~~~BB~~~~~~~~~T',
+      'T~~~~~~~BB~~~~~~~~~T',
+      'T~~~~~~~BB~~~~~~~~~T',
+      'T~~~~~~~BB~~~~~~~~~T',
+      'TssssssssssssssssssT',
+      'TssssrssssssssssrssT',
+      'TssssssssssssssssssT',
+      'T..,...............T',
+      'T.,....,.....,.....T',
+      'T........,.........T',
+      'T..T...........T...T',
+      'TTTTTTTTTTTTTTTTTTTT'
+    ],
+    inicio:{x:9,y:12}, entrega:{x:8,y:2}, entregaTxt:'Atravesse a ponte e chegue na outra margem',
+    abre:{char:'B', meta:'ponte', tile:T.ponte},
+    metas:[
+      {id:'reflexo', nome:'o Reflexo', icone:'🪞', x:6,y:8, tile:T.estrela, acao:'escolha',
+       dica:'O Reflexo brilha na beira do lago, à esquerda. Fale com ele.',
+       fala:'Obrigada, Reflexo.'},
+      {id:'ponte', nome:'consertar a ponte', icone:'🌉', x:8,y:8, tile:T.pedra, acao:'deslizante',
+       dica:'Fique na beira do lago, embaixo da ponte quebrada, e aperte A.',
+       antes:'As peças da ponte estão todas embaralhadas. Vou remontar.',
+       fala:'A ponte voltou! Dá pra atravessar.'}
+    ],
+    npcs:[
+      {id:'mel',sprite:CH.mel,x:11,y:9,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau. Água. Eu odeio água.','A ponte caiu toda. Nove pedaços.'],
+        meio:['Você tá mesmo montando isso?'],
+        fim:['A ponte ficou até bonita. Miau.']}}
+    ],
+    abertura:[['LUÍSA','A ponte quebrou em nove pedaços.'],
+      ['LUÍSA','Sem ponte, ninguém atravessa pro outro lado.'],
+      ['LUÍSA','E esse lago… mostra a gente por dentro.']],
+    final:[['LUÍSA','A ponte inteira de novo.'],['LUÍSA','O lago ficou azul — azul de calma, não de tristeza.'],
+      ['MEL','Miau. Até eu atravesso agora.']]
+  };
 
-  /* ---------------- DESENHO ---------------- */
-  function tileEm(tx,ty){
-    if(ty<0||ty>=cap.mapa.length) return '#';
-    const l = cap.mapa[ty];
-    if(tx<0||tx>=l.length) return '#';
-    return l[tx];
-  }
+  const CAP4 = {
+    id:'aurora-4', n:4, titulo:'Montanha do Vento', subtitulo:'Capítulo 4 · a Cor da Coragem',
+    emoji:'⛰️', cor:'#FF5F5F', vento:true,
+    resumo:'No topo há uma porta de pedra que só abre com a Canção de Aurora — a música da vovó.',
+    objetivo:'Toque a Canção de Aurora nos 3 sinos de vento',
+    mapa:[
+      'RRRRRRRRRRRRRRRRRRRR',
+      'RmmmRRmmmmmmRRmmmmmR',
+      'RmmmmmmmmRmmmmmmmmmR',
+      'RRmmmRmmmmmmmRRmmmmR',
+      'RmmmmmmmRRmmmmmmmmRR',
+      'RmmRRmmmmmmmmmmRmmmR',
+      'RmmmmmmmRmmmRmmmmmmR',
+      'RmmmmRRmmmmmmmmmmmmR',
+      'RmmmmmmmmmmRRmmmmmRR',
+      'RRmmmRmmmmmmmmmmmmmR',
+      'RmmmmmmmRRmmmmmRmmmR',
+      'RmmmRmmmmmmmmmmmmmmR',
+      'RmmmmmmmmmRmmmRmmmmR',
+      'RmmRRmmmmmmmmmmmmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RRRRRRRRRRRRRRRRRRRR'
+    ],
+    inicio:{x:9,y:14}, entrega:{x:9,y:1}, entregaTxt:'Suba até a porta de pedra, no topo',
+    metas:[
+      {id:'s1', nome:'1º sino', icone:'🎵', x:2,y:11, tile:T.svOff, tileOn:T.svOn, acao:'musical',
+       cfg:{n:4}, dica:'O sino toca 4 notas. Repita tocando os sinos coloridos na mesma ordem.',
+       antes:'A vovó cantava assim… quatro notas. Vou repetir.',
+       fala:'Essa é a primeira parte da canção!'},
+      {id:'s2', nome:'2º sino', icone:'🎵', x:15,y:7, tile:T.svOff, tileOn:T.svOn, acao:'musical',
+       cfg:{n:5}, dica:'Agora são 5 notas. Cada sino tem uma cor e um som diferente.',
+       antes:'Cinco notas agora. Ouvir antes de tocar.',
+       fala:'Segunda parte! O vento está mais fraco.'},
+      {id:'s3', nome:'3º sino', icone:'🎵', x:6,y:4, tile:T.svOff, tileOn:T.svOn, acao:'musical',
+       cfg:{n:6}, dica:'A última parte tem 6 notas. Errar aqui não tira nada — ela repete.',
+       antes:'A última parte. Seis notas. Coragem é ir com medo mesmo.',
+       fala:'A Canção de Aurora inteira! A porta está abrindo!'}
+    ],
+    npcs:[
+      {id:'mel',sprite:CH.mel,x:8,y:13,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau… esse vento me empurra pra trás.','Eu tô com medo.'],
+        meio:['Você também tá com medo. Eu vi.'],
+        fim:['A gente subiu com medo e chegou igual.']}}
+    ],
+    abertura:[['LUÍSA','O vento aqui empurra pra trás.'],
+      ['MEL','Eu tô com medo.','#F0B45A'],
+      ['LUÍSA','Eu também. Vem cá, segura na minha mão.'],
+      ['LUÍSA','A porta lá em cima só abre com a canção da vovó.']],
+    final:[['LUÍSA','A porta de pedra abriu.'],
+      ['LUÍSA','Vovó, eu lembrei da sua música inteirinha.'],
+      ['MEL','Miau. Faltava só o castelo agora.']]
+  };
+
+  const CAP5 = {
+    id:'aurora-5', n:5, titulo:'Castelo Cinzento', subtitulo:'Capítulo 5 · o encontro',
+    emoji:'🏰', cor:'#A78BFA',
+    resumo:'Três portas, três provas. E no salão, a Sombra do Medo — que tem a cara dela.',
+    objetivo:'Passe pelas 3 portas e enfrente a Sombra',
+    mapa:[
+      'WWWWWWWWWWWWWWWWWWWW',
+      'WcccccXcccccXccccccW',
+      'WccccccccccccccccccW',
+      'WcWWWccccccccccWWWcW',
+      'WcWXccccccccccccXWcW',
+      'WccccccccccccccccccW',
+      'WccccccccccccccccccW',
+      'WWWWOWWWWWOWWWWWOWWW',
+      'WccccccccccccccccccW',
+      'WccccccccccccccccccW',
+      'WcWWWWccccccccWWWWcW',
+      'WcWXccccccccccccXWcW',
+      'WccccccccccccccccccW',
+      'WccccccccccccccccccW',
+      'WcccccXcccccXccccccW',
+      'WWWWWWWWWWWWWWWWWWWW'
+    ],
+    inicio:{x:9,y:13}, entrega:{x:9,y:2}, entregaTxt:'Vá até o salão da Sombra, lá em cima',
+    metas:[
+      {id:'p1', nome:'porta da memória', icone:'🚪', x:4,y:7, tile:null, acao:'sequencia',
+       cfg:{n:4}, dica:'A porta da esquerda pede a prova da memória: repita as luzes.',
+       antes:'Essa porta lembra da floresta. Luzes na ordem certa.',
+       fala:'A primeira porta abriu.'},
+      {id:'p2', nome:'porta do encaixe', icone:'🚪', x:10,y:7, tile:null, acao:'deslizante',
+       dica:'A porta do meio pede a prova do encaixe: monte a figura.',
+       antes:'Essa lembra o lago. Preciso remontar a figura.',
+       fala:'A segunda porta abriu.'},
+      {id:'p3', nome:'porta da canção', icone:'🚪', x:16,y:7, tile:null, acao:'musical',
+       cfg:{n:5}, dica:'A porta da direita pede a canção: repita as notas.',
+       antes:'E essa lembra a montanha. A canção da vovó de novo.',
+       fala:'A terceira porta abriu. O salão está livre.'},
+      {id:'sombra', nome:'a Sombra', icone:'🌑', x:9,y:2, tile:null, acao:'final', exigeTudo:true,
+       dica:'Acenda as quatro cores na ordem: Alegria, Vida, Calma, Coragem.', fala:'…'}
+    ],
+    npcs:[
+      {id:'sombraNpc',sprite:CH.sombra,x:9,y:2,nome:'A SOMBRA',cor:'#D06B8C',falas:{
+        inicio:['Você é pequena.','Você tem medo.','Então por que você continua vindo?'],
+        meio:['Cada porta que você abre me deixa menor.'],
+        fim:['…obrigada por não me apagar.']}}
+    ],
+    abertura:[['LUÍSA','O castelo é a última parada.'],
+      ['LUÍSA','Três portas. Cada uma pede uma coisa que eu já aprendi.'],
+      ['LUÍSA','E lá em cima… tem alguém me esperando.']],
+    final:[['SOMBRA','Você é pequena.','#D06B8C'],['LUÍSA','Sou.'],
+      ['SOMBRA','Você tem medo.','#D06B8C'],['LUÍSA','Tenho.'],
+      ['SOMBRA','Então por que você continua vindo?','#D06B8C'],
+      ['LUÍSA','Porque ter medo e ir mesmo assim é o que ser corajosa quer dizer.'],
+      ['LUÍSA','Você não é minha inimiga. Você é a parte de mim que ficou sem cor.'],
+      ['LUÍSA','Vem. Vamos ter cor juntas.']]
+  };
+
+  const CAPS = [CAP1,CAP2,CAP3,CAP4,CAP5];
+
+  /* ================== ESTADO ================== */
+  let cv,ctx,cap,cam={x:0,y:0},raf=null,rodando=false;
+  let jog={x:0,y:0,dir:'down',andando:false};
+  let caixote={x:0,y:0};
+  let feitos=new Set(), entregue=false, falouCom=new Set();
+  let dial=null, btn={up:0,down:0,left:0,right:0}, tempo=0, saturacao=0, empurraCd=0;
+  let miniAberto=false, ventoT=0, rajada=false;
+
+  const tileEm=(tx,ty)=>{ if(ty<0||ty>=cap.mapa.length) return '#';
+    const l=cap.mapa[ty]; return (tx<0||tx>=l.length)?'#':l[tx]; };
+  function portaDe(tx,ty){ const m=(cap.metas||[]).find(m=>m.x===tx&&m.y===ty); return m?m.id:'__'; }
   function solido(tx,ty){
-    const c = tileEm(tx,ty);
-    if(c==='C') return true;
-    if(caixote.x===tx && caixote.y===ty) return true;
+    const c=tileEm(tx,ty);
+    if(cap.caixote && caixote.x===tx && caixote.y===ty) return true;
+    if(c==='O') return !feitos.has(portaDe(tx,ty));
+    if(cap.abre && c===cap.abre.char && feitos.has(cap.abre.meta)) return false;
     return SOLIDOS.has(c);
   }
-  function dTile(idx,px,py){
-    ctx.drawImage(atlas, idx*TS, CH_H, TS, TS, px, py, TS, TS);
-  }
-  function dChar(idx,px,py){
-    ctx.drawImage(atlas, idx*CH_W, 0, CH_W, CH_H, px, py, CH_W, CH_H);
-  }
+  const dTile=(i,x,y)=>ctx.drawImage(atlas,i*TS,CH_H,TS,TS,x,y,TS,TS);
+  const dChar=(i,x,y)=>ctx.drawImage(atlas,i*CH_W,0,CH_W,CH_H,x,y,CH_W,CH_H);
+  const chaoBase=()=> cap.escuro?T.chaoFlo : cap.vento?T.chaoMont :
+    cap.id==='aurora-3'?T.areia : cap.id==='aurora-5'?T.pisoCas : T.grama;
 
+  /* ================== DESENHO ================== */
   function desenhar(){
-    ctx.imageSmoothingEnabled = false;
-    // chão
-    const t0x = Math.floor(cam.x/TS), t0y = Math.floor(cam.y/TS);
-    for(let ty=t0y; ty<=t0y+VH/TS+1; ty++){
-      for(let tx=t0x; tx<=t0x+VW/TS+1; tx++){
-        const c = tileEm(tx,ty);
-        let idx = LEGENDA[c];
-        if(idx===undefined) idx = T.grama;
-        if(c==='~') idx = (Math.floor(tempo/22)%2) ? T.agua2 : T.agua;
-        if(SOLIDOS.has(c) && c!=='~') dTile(T.grama, tx*TS-cam.x, ty*TS-cam.y);   // base sob objetos
-        dTile(idx, tx*TS-cam.x, ty*TS-cam.y);
-      }
+    ctx.imageSmoothingEnabled=false;
+    const t0x=Math.floor(cam.x/TS), t0y=Math.floor(cam.y/TS);
+    for(let ty=t0y;ty<=t0y+VH/TS+1;ty++)for(let tx=t0x;tx<=t0x+VW/TS+1;tx++){
+      const c=tileEm(tx,ty); let idx=LEGENDA[c]; if(idx===undefined) idx=chaoBase();
+      if(ANIMADOS[c]) idx=ANIMADOS[c][Math.floor(tempo/22)%2];
+      if(c==='O' && feitos.has(portaDe(tx,ty))) idx=T.portaCasA;
+      if(cap.abre && c===cap.abre.char && feitos.has(cap.abre.meta)) idx=cap.abre.tile;
+      if(SOLIDOS.has(c)&&!ANIMADOS[c]&&c!=='W'&&c!=='O'&&c!=='X') dTile(chaoBase(),tx*TS-cam.x,ty*TS-cam.y);
+      dTile(idx,tx*TS-cam.x,ty*TS-cam.y);
     }
-    // caixote
-    dTile(T.caixote, caixote.x*TS-cam.x, caixote.y*TS-cam.y);
-    // itens no chão
-    cap.itens.forEach(it=>{
-      if(coletados.has(it.id)) return;
-      const flut = Math.sin(tempo/16 + it.x)*1.2;
-      dTile(it.tile, it.x*TS-cam.x, it.y*TS-cam.y + flut);
-      if(Math.floor(tempo/20)%3===0) dTile(T.brilho, it.x*TS-cam.x, it.y*TS-cam.y-6);
+    if(cap.caixote) dTile(T.caixote,caixote.x*TS-cam.x,caixote.y*TS-cam.y);
+
+    (cap.metas||[]).forEach(m=>{
+      const ok=feitos.has(m.id);
+      const tile = ok ? (m.tileOn!==undefined?m.tileOn:null) : m.tile;
+      if(tile===null||tile===undefined) return;
+      const flut=ok?0:Math.sin(tempo/16+m.x)*1.2;
+      dTile(tile,m.x*TS-cam.x,m.y*TS-cam.y+flut);
+      if(!ok && Math.floor(tempo/20)%3===0) dTile(T.brilho,m.x*TS-cam.x,m.y*TS-cam.y-6);
     });
-    // NPCs
-    const f = Math.floor(tempo/26)%2;
-    cap.npcs.forEach(n=>{ dChar(n.sprite+f, n.x*TS-cam.x, n.y*TS-cam.y-8); balaoNpc(n); });
-    // jogadora
-    const jf = jog.andando ? Math.floor(tempo/9)%2 : 0;
-    dChar(CH.luisa[jog.dir]+jf, Math.round(jog.x-cam.x), Math.round(jog.y-cam.y)-8);
-    setaGuia();
+
+    const f=Math.floor(tempo/26)%2;
+    (cap.npcs||[]).forEach(n=>{
+      if(n.oculto && !prontoParaFinal()) return;
+      dChar(n.sprite+f,n.x*TS-cam.x,n.y*TS-cam.y-8);
+      if(D().baloes) balaoNpc(n);
+    });
+
+    const jf=jog.andando?Math.floor(tempo/9)%2:0;
+    dChar(CH.luisa[jog.dir]+jf,Math.round(jog.x-cam.x),Math.round(jog.y-cam.y)-8);
+
+    if(cap.escuro) escuridao();
+    if(cap.vento&&rajada) ventoFx();
+    if(D().seta) setaGuia();
     hud();
   }
-
-  // --- para onde a Luísa precisa ir agora ---
+  function escuridao(){
+    const luz=38+feitos.size*26, jx=jog.x+8-cam.x, jy=jog.y+8-cam.y;
+    const g=ctx.createRadialGradient(jx,jy,luz*0.35,jx,jy,luz);
+    g.addColorStop(0,'rgba(6,10,14,0)'); g.addColorStop(1,'rgba(6,10,14,0.93)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH);
+  }
+  function ventoFx(){
+    ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1;
+    for(let i=0;i<7;i++){
+      const y=(tempo*3+i*29)%VH, x=((tempo*5+i*61)%(VW+40))-40;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+22,y+3); ctx.stroke();
+    }
+  }
   function alvoAtual(){
     if(entregue) return null;
-    const sino = cap.itens.find(i=>i.noAlto);
-    const caixoteNoLugar = caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y;
-    if(sino && !coletados.has(sino.id) && !caixoteNoLugar)
-      return {x:caixote.x, y:caixote.y, tipo:'caixote'};
-    const pend = cap.itens.filter(i=>!coletados.has(i.id));
+    if(cap.caixote){
+      const sino=cap.metas.find(m=>m.noAlto);
+      const noLugar=caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y;
+      if(sino&&!feitos.has(sino.id)&&!noLugar) return {x:caixote.x,y:caixote.y};
+    }
+    const pend=(cap.metas||[]).filter(m=>!feitos.has(m.id)&&!(m.exigeTudo&&!prontoParaFinal()));
     if(pend.length){
       const jx=(jog.x+8)/TS, jy=(jog.y+8)/TS;
       pend.sort((a,b)=>Math.hypot(a.x-jx,a.y-jy)-Math.hypot(b.x-jx,b.y-jy));
-      return {x:pend[0].x, y:pend[0].y, tipo:'item'};
+      return {x:pend[0].x,y:pend[0].y};
     }
-    return {x:cap.entrega.x, y:cap.entrega.y, tipo:'entrega'};
+    return cap.entrega?{x:cap.entrega.x,y:cap.entrega.y}:null;
   }
-
   function setaGuia(){
-    const a = alvoAtual(); if(!a) return;
-    const ax = a.x*TS+8-cam.x, ay = a.y*TS+8-cam.y;
-    const pulso = 1 + Math.sin(tempo/12)*0.18;
-    const dentro = ax>10 && ax<VW-10 && ay>18 && ay<VH-10;
-    let px, py, ang;
-    if(dentro){ px=ax; py=ay-14 - Math.sin(tempo/12)*2; ang=Math.PI/2; }
-    else{
-      const jx = jog.x+8-cam.x, jy = jog.y+8-cam.y;
-      ang = Math.atan2(ay-jy, ax-jx);
-      const r = 26;
-      px = Math.max(12, Math.min(VW-12, jx + Math.cos(ang)*r));
-      py = Math.max(22, Math.min(VH-12, jy + Math.sin(ang)*r));
-    }
+    const a=alvoAtual(); if(!a) return;
+    const ax=a.x*TS+8-cam.x, ay=a.y*TS+8-cam.y, pulso=1+Math.sin(tempo/12)*.18;
+    const dentro=ax>10&&ax<VW-10&&ay>18&&ay<VH-10;
+    let px,py,ang;
+    if(dentro){ px=ax; py=ay-14-Math.sin(tempo/12)*2; ang=Math.PI/2; }
+    else{ const jx=jog.x+8-cam.x, jy=jog.y+8-cam.y; ang=Math.atan2(ay-jy,ax-jx);
+      px=Math.max(12,Math.min(VW-12,jx+Math.cos(ang)*26));
+      py=Math.max(22,Math.min(VH-12,jy+Math.sin(ang)*26)); }
     ctx.save(); ctx.translate(px,py); ctx.rotate(ang); ctx.scale(pulso,pulso);
     ctx.fillStyle='#FFD84D'; ctx.strokeStyle='#3B2340'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(-4,-5); ctx.lineTo(-1,0); ctx.lineTo(-4,5);
     ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
   }
-
-  // --- balão "!" sobre NPC com quem ela ainda não falou ---
   function balaoNpc(n){
     if(falouCom.has(n.id)) return;
-    const bx = n.x*TS+8-cam.x, by = n.y*TS-12-cam.y + Math.sin(tempo/14)*1.5;
+    const bx=n.x*TS+8-cam.x, by=n.y*TS-12-cam.y+Math.sin(tempo/14)*1.5;
     ctx.fillStyle='#fff'; ctx.strokeStyle='#3B2340'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.roundRect(bx-5,by-9,10,12,3); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#E5348A'; ctx.font='bold 9px monospace';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('!', bx, by-2); ctx.textAlign='left';
+    ctx.fillStyle='#E5348A'; ctx.font='bold 9px monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('!',bx,by-2); ctx.textAlign='left';
   }
-
   function hud(){
-    ctx.fillStyle='rgba(20,14,32,.72)';
-    ctx.fillRect(0,0,VW,14);
-    ctx.fillStyle='#FFECB4';
-    ctx.font='8px monospace'; ctx.textBaseline='middle';
-    ctx.fillText(cap.titulo.toUpperCase(), 4, 7);
-    let x = VW-6;
-    for(let i=cap.itens.length-1;i>=0;i--){
-      const it=cap.itens[i];
-      ctx.globalAlpha = coletados.has(it.id)?1:.25;
-      ctx.drawImage(atlas, it.tile*TS, CH_H, TS,TS, x-12, -1, 12,12);
-      x-=14;
-    }
-    ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(20,14,32,.72)'; ctx.fillRect(0,0,VW,14);
+    ctx.fillStyle='#FFECB4'; ctx.font='8px monospace'; ctx.textBaseline='middle';
+    ctx.textAlign='left'; ctx.fillText(cap.titulo.toUpperCase(),4,7);
+    ctx.textAlign='right'; ctx.fillText(feitos.size+'/'+cap.metas.length,VW-5,7); ctx.textAlign='left';
   }
 
-  /* ---------------- DIÁLOGO (DOM, fora do canvas) ---------------- */
-  const dlgEl = () => document.getElementById('rpgDialogo');
-  function falar(linhas, cb){
-    dial = {linhas:linhas.slice(), i:0, cb};
-    mostrarLinha();
-  }
+  /* ================== DIÁLOGO ================== */
+  const dlgEl=()=>document.getElementById('rpgDialogo');
+  function falar(linhas,cb){ dial={linhas:linhas.slice(),i:0,cb}; mostrarLinha(); }
   function mostrarLinha(){
-    const el = dlgEl();
-    if(!dial || dial.i>=dial.linhas.length){
-      el.classList.remove('on'); const cb = dial&&dial.cb; dial=null; cb&&cb(); return;
-    }
-    const [nome,texto] = dial.linhas[dial.i];
-    const ehLuisa = nome==='LUÍSA';
-    el.querySelector('.rpgNome').textContent = nome;
-    el.querySelector('.rpgNome').style.color = ehLuisa ? '#FFD84D' : (dial.linhas[dial.i][2]||'#8FE3FF');
-    el.querySelector('.rpgTexto').textContent = texto;
-    const ret = el.querySelector('.rpgRetrato');
-    ret.style.display = ehLuisa ? 'block' : 'none';
+    const el=dlgEl();
+    if(!dial||dial.i>=dial.linhas.length){ el.classList.remove('on'); const cb=dial&&dial.cb; dial=null; cb&&cb(); return; }
+    const [nome,texto,cor]=dial.linhas[dial.i];
+    const ehLuisa=nome==='LUÍSA';
+    el.querySelector('.rpgNome').textContent=nome;
+    el.querySelector('.rpgNome').style.color=ehLuisa?'#FFD84D':(cor||'#8FE3FF');
+    el.querySelector('.rpgTexto').textContent=texto;
+    el.querySelector('.rpgRetrato').style.display=ehLuisa?'block':'none';
     el.classList.add('on');
   }
   function avancarDialogo(){ if(dial){ dial.i++; mostrarLinha(); return true; } return false; }
+  function aviso(t){ const e=document.getElementById('rpgAviso'); e.textContent=t; e.classList.add('on');
+    setTimeout(()=>e.classList.remove('on'),2200); }
 
-  function aviso(txt){ mensagem = txt; msgT = 150; const e=document.getElementById('rpgAviso'); e.textContent=txt; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),2200); }
+  /* ================== MINI-JOGOS ================== */
+  const mini=()=>document.getElementById('rpgMini');
+  function abrirMini(html){ miniAberto=true; const m=mini(); m.innerHTML=html; m.classList.add('on'); }
+  function fecharMini(){ miniAberto=false; const m=mini(); if(m){ m.classList.remove('on'); m.innerHTML=''; } }
 
-  /* ---------------- AÇÃO (botão A) ---------------- */
+  const LUZES=[{c:'#FF5FA2',f:523},{c:'#FFD84D',f:659},{c:'#35D6D0',f:784},{c:'#A78BFA',f:988},{c:'#7BD97B',f:1175}];
+
+  function jogoSequencia(meta,cb){
+    const n=(meta.cfg&&meta.cfg.n||3)+D().extra, vel=D().vel;
+    const seq=Array.from({length:n},()=>Math.floor(Math.random()*LUZES.length));
+    let pos=0,bloq=true;
+    abrirMini('<div class="miniBox"><div class="miniT">✨ Repita a ordem das luzes</div>'+
+      '<div class="miniSub" id="mSub">Olhando…</div><div class="miniLuzes">'+
+      LUZES.map((c,i)=>'<button class="lz" data-i="'+i+'" style="background:'+c.c+'"></button>').join('')+
+      '</div><div class="miniAcoes"><button class="btn" id="mRep">🔁 Ver de novo</button>'+
+      '<button class="btn" id="mSair">✖ Sair</button></div></div>');
+    const els=[...mini().querySelectorAll('.lz')], sub=mini().querySelector('#mSub');
+    const acende=i=>{ els[i].classList.add('on'); beep(LUZES[i].f,.22,'sine',.2);
+      setTimeout(()=>els[i].classList.remove('on'),vel*0.55); };
+    function tocar(){ bloq=true; pos=0; sub.textContent='Olhando…';
+      seq.forEach((v,k)=>setTimeout(()=>acende(v),400+k*vel));
+      setTimeout(()=>{bloq=false; sub.textContent='Agora é você!';},400+seq.length*vel); }
+    els.forEach(el=>el.addEventListener('click',()=>{
+      if(bloq) return; const i=+el.dataset.i; acende(i);
+      if(seq[pos]===i){ pos++;
+        if(pos===seq.length){ bloq=true; sub.textContent='Acertou! 🎉'; sOk(); confete(40);
+          setTimeout(()=>{fecharMini(); cb(true);},700); }
+      } else { bloq=true; sNo(); sub.textContent='Quase! Olha de novo…'; setTimeout(tocar,900); }
+    }));
+    mini().querySelector('#mRep').addEventListener('click',()=>{ if(!bloq) tocar(); });
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
+    setTimeout(tocar,300);
+  }
+
+  const NOTAS=[{c:'#FFD84D',f:523,n:'dó'},{c:'#7BD97B',f:587,n:'ré'},{c:'#35D6D0',f:659,n:'mi'},{c:'#FF8FC2',f:784,n:'sol'}];
+  function jogoMusical(meta,cb){
+    const n=(meta.cfg&&meta.cfg.n||4)+D().extra, vel=D().vel;
+    const seq=Array.from({length:n},()=>Math.floor(Math.random()*NOTAS.length));
+    let pos=0,bloq=true;
+    abrirMini('<div class="miniBox"><div class="miniT">🎵 A Canção de Aurora</div>'+
+      '<div class="miniSub" id="mSub">Ouvindo…</div><div class="miniLuzes">'+
+      NOTAS.map((x,i)=>'<button class="lz sino" data-i="'+i+'" style="background:'+x.c+'"><span>'+x.n+'</span></button>').join('')+
+      '</div><div class="miniAcoes"><button class="btn" id="mRep">🔁 Ouvir de novo</button>'+
+      '<button class="btn" id="mSair">✖ Sair</button></div></div>');
+    const bs=[...mini().querySelectorAll('.lz')], sub=mini().querySelector('#mSub');
+    const toca=i=>{ bs[i].classList.add('on'); beep(NOTAS[i].f,.3,'triangle',.22);
+      setTimeout(()=>bs[i].classList.remove('on'),vel*0.55); };
+    function tocar(){ bloq=true; pos=0; sub.textContent='Ouvindo…';
+      seq.forEach((v,k)=>setTimeout(()=>toca(v),400+k*vel));
+      setTimeout(()=>{bloq=false; sub.textContent='Agora toque você!';},400+seq.length*vel); }
+    bs.forEach(el=>el.addEventListener('click',()=>{
+      if(bloq) return; const i=+el.dataset.i; toca(i);
+      if(seq[pos]===i){ pos++;
+        if(pos===seq.length){ bloq=true; sub.textContent='Perfeito! 🎶'; sWin(); confete(50);
+          setTimeout(()=>{fecharMini(); cb(true);},800); }
+      } else { bloq=true; sNo(); sub.textContent='Quase! Escuta de novo…'; setTimeout(tocar,900); }
+    }));
+    mini().querySelector('#mRep').addEventListener('click',()=>{ if(!bloq) tocar(); });
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
+    setTimeout(tocar,300);
+  }
+
+  function jogoDeslizante(meta,cb){
+    const n=D().grid, tot=n*n, img=IMGS[Math.floor(Math.random()*IMGS.length)];
+    let est=[...Array(tot).keys()], vazio=tot-1;
+    const viz=i=>{const r=Math.floor(i/n),c=i%n,v=[];
+      if(r>0)v.push(i-n); if(r<n-1)v.push(i+n); if(c>0)v.push(i-1); if(c<n-1)v.push(i+1); return v;};
+    for(let k=0;k<n*n*22;k++){ const vs=viz(vazio), a=vs[Math.floor(Math.random()*vs.length)];
+      [est[vazio],est[a]]=[est[a],est[vazio]]; vazio=a; }
+    abrirMini('<div class="miniBox"><div class="miniT">🧩 Monte a figura</div>'+
+      '<div class="miniSub" id="mSub">Toque numa peça do lado do buraco</div>'+
+      '<div class="miniGrid" id="mGrid" style="--n:'+n+'"></div>'+
+      '<div class="miniAcoes"><button class="btn" id="mSair">✖ Sair</button></div></div>');
+    const grid=mini().querySelector('#mGrid'), sub=mini().querySelector('#mSub');
+    function pinta(){
+      grid.innerHTML='';
+      est.forEach((peca,p)=>{
+        const d=document.createElement('div'); d.className='pz';
+        if(peca===tot-1) d.classList.add('vazio');
+        else{
+          d.style.backgroundImage="url('"+img+"')";
+          d.style.backgroundSize=(n*100)+'% '+(n*100)+'%';
+          d.style.backgroundPosition=((peca%n)/(n-1)*100)+'% '+(Math.floor(peca/n)/(n-1)*100)+'%';
+        }
+        d.addEventListener('click',()=>{
+          const v=est.indexOf(tot-1);
+          if(!viz(p).includes(v)){ sNo(); return; }
+          [est[p],est[v]]=[est[v],est[p]]; beep(660,.07,'triangle'); pinta();
+          if(est.every((x,i)=>x===i)){ sub.textContent='Montou! 🎉'; sWin(); confete(60);
+            setTimeout(()=>{fecharMini(); cb(true);},800); }
+        });
+        grid.appendChild(d);
+      });
+    }
+    pinta();
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
+  }
+
+  function jogoEscolha(meta,cb){
+    abrirMini('<div class="miniBox"><div class="miniT">🪞 O Reflexo pergunta</div>'+
+      '<div class="miniSub">"Você tem certeza que consegue?"</div>'+
+      '<div class="miniAcoes col"><button class="btn pri" data-r="0">Não tenho</button>'+
+      '<button class="btn pri" data-r="1">Tenho</button></div>'+
+      '<p class="miniNota">As duas respostas estão certas.</p></div>');
+    mini().querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>{
+      const r=+b.dataset.r; fecharMini(); sOk();
+      falar(r===0
+        ? [['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Não tenho.'],
+           ['LUÍSA','Mas eu vou tentar do mesmo jeito.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']]
+        : [['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Tenho.'],
+           ['LUÍSA','E se eu não conseguir, eu tento outra vez.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']],
+        ()=>cb(true));
+    }));
+  }
+
+  const CORES4=[{c:'#FFD84D',n:'Alegria',f:523},{c:'#7BD97B',n:'Vida',f:659},
+                {c:'#35D6D0',n:'Calma',f:784},{c:'#FF5F5F',n:'Coragem',f:988}];
+  function jogoFinal(meta,cb){
+    let pos=0;
+    const emb=[0,1,2,3].sort(()=>Math.random()-.5);
+    abrirMini('<div class="miniBox"><div class="miniT">🌈 Acenda as quatro cores</div>'+
+      '<div class="miniSub" id="mSub">'+(D().ordemCores
+        ? 'Na ordem: Alegria → Vida → Calma → Coragem'
+        : 'Na ordem em que você as conquistou')+'</div>'+
+      '<div class="miniLuzes wrap">'+emb.map(i=>
+        '<button class="lz cor4" data-i="'+i+'" style="background:'+CORES4[i].c+'"><span>'+CORES4[i].n+'</span></button>').join('')+
+      '</div><div class="miniAcoes"><button class="btn" id="mSair">✖ Sair</button></div></div>');
+    const sub=mini().querySelector('#mSub');
+    mini().querySelectorAll('.cor4').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.i;
+      if(pos===i){ b.classList.add('ok'); beep(CORES4[i].f,.3,'sine',.22); pos++;
+        if(pos===4){ sub.textContent='As quatro juntas viram luz! ✨'; sWin(); confete(180);
+          setTimeout(()=>{fecharMini(); cb(true);},900); }
+      } else { sNo(); sub.textContent='Essa não é a próxima. Comece de novo.';
+        pos=0; mini().querySelectorAll('.cor4').forEach(x=>x.classList.remove('ok')); }
+    }));
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
+  }
+
+  /* ================== AÇÃO ================== */
   function alvoFrente(){
-    const tx = Math.floor((jog.x+8)/TS) + (jog.dir==='left'?-1:jog.dir==='right'?1:0);
-    const ty = Math.floor((jog.y+8)/TS) + (jog.dir==='up'?-1:jog.dir==='down'?1:0);
+    const tx=Math.floor((jog.x+8)/TS)+(jog.dir==='left'?-1:jog.dir==='right'?1:0);
+    const ty=Math.floor((jog.y+8)/TS)+(jog.dir==='up'?-1:jog.dir==='down'?1:0);
     return {tx,ty};
   }
+  const prontoParaFinal=()=>(cap.metas||[]).filter(m=>!m.exigeTudo).every(m=>feitos.has(m.id));
+  const todasFeitas=()=>(cap.metas||[]).every(m=>feitos.has(m.id));
+
   function agir(){
+    if(miniAberto) return;
     if(avancarDialogo()) return;
-    const {tx,ty} = alvoFrente();
-    // NPC?
-    const n = cap.npcs.find(n=>n.x===tx && n.y===ty);
-    if(n){
-      const fase = entregue ? 'fim' : (coletados.size>0 ? 'meio' : 'inicio');
-      falouCom.add(n.id);
-      falar(n.falas[fase].map(t=>[n.nome,t,n.corNome]));
-      beep(560,.07); return;
+    const {tx,ty}=alvoFrente();
+    const m=(cap.metas||[]).find(m=>!feitos.has(m.id)&&m.x===tx&&m.y===ty);
+    if(m){
+      if(m.exigeTudo && !prontoParaFinal()){ falar([['LUÍSA','Ainda não. Falta terminar as outras provas.']]); return; }
+      return executarMeta(m);
     }
-    // item no chão?
-    const it = cap.itens.find(i=>!coletados.has(i.id) && i.x===tx && i.y===ty);
-    if(it){
-      if(it.noAlto){
-        const emCima = (caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y);
-        if(!emCima){ falar([['LUÍSA',it.dica],['LUÍSA','Se eu não alcanço, eu mudo de lugar. Cadê aquele caixote?']]); return; }
-        falar([['LUÍSA','Subi no caixote…'],['LUÍSA',it.pegou]], ()=>pegar(it));
-        return;
-      }
-      falar([['LUÍSA',it.pegou]], ()=>pegar(it));
-      return;
+    if(cap.caixote){
+      const alto=cap.metas.find(x=>x.noAlto&&!feitos.has(x.id));
+      if(alto && caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y &&
+         Math.abs(tx-caixote.x)<=1 && Math.abs(ty-caixote.y)<=1){
+        falar([['LUÍSA','Subi no caixote…'],['LUÍSA',alto.fala]],()=>concluirMeta(alto)); return; }
     }
-    // item no alto alcançável estando ao lado do caixote posicionado
-    const alvo = cap.itens.find(i=>i.noAlto && !coletados.has(i.id));
-    if(alvo && caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y){
-      if(Math.abs(tx-caixote.x)<=1 && Math.abs(ty-caixote.y)<=1){
-        falar([['LUÍSA','Subi no caixote…'],['LUÍSA',alvo.pegou]], ()=>pegar(alvo));
-        return;
-      }
-    }
-    // entrega
-    if(coletados.size===cap.itens.length && !entregue &&
-       Math.abs(tx-cap.entrega.x)<=1 && Math.abs(ty-cap.entrega.y)<=1){
-      concluir(); return;
-    }
-    if(coletados.size===cap.itens.length && !entregue){
-      falar([['LUÍSA','Tenho tudo! Preciso levar pro centro da praça.']]);
-    }
+    const n=(cap.npcs||[]).find(n=>n.x===tx&&n.y===ty&&(!n.oculto||prontoParaFinal()));
+    if(n){ const fase=entregue?'fim':(feitos.size>0?'meio':'inicio'); falouCom.add(n.id);
+      falar(n.falas[fase].map(t=>[n.nome,t,n.cor])); beep(560,.07); return; }
+    if(cap.entrega && todasFeitas() && !entregue &&
+       Math.abs(tx-cap.entrega.x)<=1 && Math.abs(ty-cap.entrega.y)<=1){ concluir(); return; }
+    if(todasFeitas() && !entregue && cap.entrega)
+      falar([['LUÍSA',cap.entregaTxt||'Preciso ir até onde a seta mostra.']]);
   }
-  function pegar(it){
-    coletados.add(it.id); sOk(); confete(30); salvar(); objetivoUI();
-    saturacao = Math.min(1, .25 + coletados.size*.25); aplicarCor();
-    if(coletados.size===cap.itens.length){
-      setTimeout(()=>falar([['LUÍSA','Achei os três! Agora, pro centro da praça.']]),400);
-    }
+
+  function executarMeta(m){
+    const seguir=ok=>{ if(ok) concluirMeta(m); };
+    const roda=()=>{
+      if(m.acao==='pegar'){
+        if(m.noAlto){
+          const ok=caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y;
+          if(!ok){ falar([['LUÍSA',m.dica],['LUÍSA','Se eu não alcanço, eu mudo de lugar. Cadê aquele caixote?']]); return; }
+          falar([['LUÍSA','Subi no caixote…'],['LUÍSA',m.fala]],()=>concluirMeta(m)); return;
+        }
+        falar([['LUÍSA',m.fala]],()=>concluirMeta(m)); return;
+      }
+      if(m.acao==='falar'){ concluirMeta(m); return; }
+      if(m.acao==='sequencia')  return jogoSequencia(m,seguir);
+      if(m.acao==='musical')    return jogoMusical(m,seguir);
+      if(m.acao==='deslizante') return jogoDeslizante(m,seguir);
+      if(m.acao==='escolha')    return jogoEscolha(m,seguir);
+      if(m.acao==='final')      return jogoFinal(m,seguir);
+    };
+    if(m.antes && m.acao!=='pegar') falar([['LUÍSA',m.antes]],roda); else roda();
+  }
+
+  function concluirMeta(m){
+    feitos.add(m.id); sOk(); confete(30); salvar(); objetivoUI();
+    saturacao=Math.min(1,.22+feitos.size*(0.78/cap.metas.length)); aplicarCor();
+    if(m.fala && m.acao!=='pegar' && m.acao!=='escolha' && m.acao!=='final' && m.acao!=='falar')
+      setTimeout(()=>{ if(!dial) falar([['LUÍSA',m.fala]]); },350);
+    if(todasFeitas()) setTimeout(()=>{ if(!dial){
+      if(cap.entrega) falar([['LUÍSA',cap.entregaTxt||'Agora é só chegar no lugar certo.']]);
+      else concluir(); } },700);
   }
   function concluir(){
-    entregue = true; salvar(); objetivoUI();
-    falar(cap.final.map(l=>[l[0],l[1]]), ()=>{
-      saturacao = 1; aplicarCor(); sWin(); confete(150);
-      setTimeout(()=>{
-        vencer('🌈','Capítulo 1 completo!',`${cap.titulo} voltou a ter cor.`, ()=>{ reiniciarCap(); });
-      },700);
+    entregue=true; salvar(); objetivoUI();
+    falar(cap.final.map(l=>[l[0],l[1],l[2]]),()=>{
+      saturacao=1; aplicarCor(); sWin(); confete(170); marcarCapConcluido(cap.id);
+      setTimeout(()=>vencer('🌈','Capítulo '+cap.n+' completo!',cap.titulo+' voltou a ter cor.',
+        ()=>{ const prox=CAPS[cap.n]; if(prox) iniciar(prox,true); else voltarMenu(); }),700);
     });
-  }
-  function objetivoUI(){
-    const el = document.getElementById('rpgObj'); if(!el) return;
-    const icones = {sino:'🔔', bola:'⚽', novelo:'🧶'};
-    el.innerHTML = cap.itens.map(i=>{
-      const ok = coletados.has(i.id);
-      return `<span class="objIt ${ok?'ok':''}">${ok?'✅':(icones[i.id]||'❔')} ${
-        (i.nome||i.id).replace(/^(o|a) /,'')}</span>`;
-    }).join('');
-    const t = document.getElementById('rpgObjT');
-    if(t) t.textContent = entregue ? 'Capítulo completo! 🌈'
-        : (coletados.size===cap.itens.length ? 'Leve tudo pro meio da rua e aperte A'
-        : 'Ache as 3 coisas que a vila perdeu');
   }
   function aplicarCor(){
-    cv.style.filter = `saturate(${(0.22 + 0.78*saturacao).toFixed(2)}) brightness(${(0.90+0.10*saturacao).toFixed(2)})`;
+    cv.style.filter='saturate('+(0.22+0.78*saturacao).toFixed(2)+') brightness('+(0.90+0.10*saturacao).toFixed(2)+')';
   }
 
-  /* ---------------- DICAS ---------------- */
+  /* ================== DICAS ================== */
   function dicaAtual(){
-    if(entregue) return [['DICA','Capítulo completo! Aperte 🔄 Recomeçar para jogar de novo.']];
-    const sino = cap.itens.find(i=>i.noAlto);
-    const noLugar = caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y;
-    if(coletados.size===cap.itens.length)
-      return [['DICA','Você já tem os três!'],['DICA','Vá até o meio da rua larga, onde a seta aponta, e aperte A.']];
-    if(sino && !coletados.has(sino.id) && !noLugar)
-      return [['DICA','O sino está no telhado e eu não alcanço.'],
-              ['DICA','Vá até o caixote de madeira (a seta mostra onde ele está).'],
-              ['DICA','Encoste nele e continue andando: ele se mexe um quadradinho.'],
-              ['DICA','Empurre até o caixote ficar do lado da casa do sino.'],
-              ['DICA','Se ele ficar entalado, aperte 🪄 Arrumar caixote.']];
-    if(sino && !coletados.has(sino.id) && noLugar)
-      return [['DICA','O caixote já está no lugar certo!'],['DICA','Fique do lado dele, olhe pro sino e aperte A.']];
-    const pend = cap.itens.filter(i=>!coletados.has(i.id));
-    return [['DICA', pend[0].dica || ('Procure ' + (pend[0].nome||'o item') + '.')],
-            ['DICA','Siga a seta amarela e aperte A quando chegar perto.']];
-  }
-  function pedirDica(){ if(dial) return; beep(880,.1); falar(dicaAtual()); }
-
-  // reposiciona o caixote no ponto inicial (nunca dá pra travar o jogo)
-  function arrumarCaixote(){
-    if(dial) return;
-    if(caixote.x===cap.caixote.x && caixote.y===cap.caixote.y &&
-       !(caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y)){
-      falar([['LUÍSA','O caixote já está no lugar onde ele começou.']]); return;
+    if(entregue) return [['DICA','Capítulo completo!']];
+    if(cap.caixote){
+      const sino=cap.metas.find(m=>m.noAlto);
+      const noLugar=caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y;
+      if(sino&&!feitos.has(sino.id)&&!noLugar)
+        return [['DICA','O sino está no telhado e eu não alcanço.'],
+                ['DICA','Encoste no caixote e continue andando: ele se mexe um quadradinho.'],
+                ['DICA','Empurre até ele ficar do lado da casa do sino.'],
+                ['DICA','Entalou? Aperte 🪄 Arrumar caixote.']];
+      if(sino&&!feitos.has(sino.id)&&noLugar)
+        return [['DICA','O caixote já está no lugar!'],['DICA','Fique do lado dele, olhe pro sino e aperte A.']];
     }
-    caixote.x=cap.caixote.x; caixote.y=cap.caixote.y; salvar(); sOk();
-    aviso('O caixote voltou pro começo!');
-    falar([['LUÍSA','Pronto, arrumei o caixote. Dá pra tentar de novo quantas vezes eu quiser.']]);
+    if(todasFeitas()) return [['DICA',cap.entregaTxt||'Vá até onde a seta aponta e aperte A.']];
+    const pend=cap.metas.filter(m=>!feitos.has(m.id)&&!(m.exigeTudo&&!prontoParaFinal()));
+    return [['DICA',pend[0].dica||('Procure: '+pend[0].nome)],['DICA','Chegue pertinho e aperte A.']];
+  }
+  function pedirDica(){
+    if(dial||miniAberto) return;
+    if(D().dicas===0){ aviso('No Difícil não tem dica. Você consegue!'); sNo(); return; }
+    if(dicasRestantes<=0){ aviso('Acabaram as dicas deste capítulo.'); sNo(); return; }
+    dicasRestantes--; atualizarBotaoDica(); beep(880,.1); falar(dicaAtual());
+  }
+  function atualizarBotaoDica(){
+    const b=document.getElementById('rpgDica'); if(!b) return;
+    if(D().dicas===0){ b.style.display='none'; return; }
+    b.style.display='';
+    b.textContent = D().dicas>=99 ? '💡 Dica' : '💡 Dica ('+dicasRestantes+')';
+    b.style.opacity = dicasRestantes>0?1:.45;
   }
 
-  // o caixote ficou sem nenhum lado de onde empurrar?
+  /* ================== CAIXOTE ================== */
+  function arrumarCaixote(){
+    if(!cap.caixote){ aviso('Este capítulo não tem caixote.'); return; }
+    if(dial||miniAberto) return;
+    caixote.x=cap.caixote.x; caixote.y=cap.caixote.y; salvar(); sOk(); aviso('O caixote voltou pro começo!');
+  }
+  const solidoSemCaixote=(tx,ty)=>SOLIDOS.has(tileEm(tx,ty));
   function caixotePreso(){
-    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y) return false;
-    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
-    return !dirs.some(([dx,dy])=>{
-      const de = {x:caixote.x-dx, y:caixote.y-dy};      // de onde a Luísa empurraria
-      const pa = {x:caixote.x+dx, y:caixote.y+dy};      // pra onde o caixote iria
-      return !solidoSemCaixote(de.x,de.y) && !solidoSemCaixote(pa.x,pa.y);
-    });
+    if(!cap.caixote) return false;
+    if(caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y) return false;
+    return ![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>
+      !solidoSemCaixote(caixote.x-dx,caixote.y-dy)&&!solidoSemCaixote(caixote.x+dx,caixote.y+dy));
   }
-  function solidoSemCaixote(tx,ty){
-    const c = tileEm(tx,ty);
-    return SOLIDOS.has(c) || c==='C';
-  }
-
-  /* ---------------- MOVIMENTO ---------------- */
-  function passo(){
-    if(dial) { jog.andando=false; return; }
-    let dx=0, dy=0;
-    if(btn.left) dx=-1; else if(btn.right) dx=1;
-    else if(btn.up) dy=-1; else if(btn.down) dy=1;
-    jog.andando = !!(dx||dy);
-    if(!jog.andando) return;
-    jog.dir = dx<0?'left':dx>0?'right':dy<0?'up':'down';
-    const v = 1.1;
-    const nx = jog.x + dx*v, ny = jog.y + dy*v;
-    // caixa de colisão: pés da personagem
-    const cx0 = Math.floor((nx+3)/TS), cx1 = Math.floor((nx+12)/TS);
-    const cy0 = Math.floor((ny+7)/TS),  cy1 = Math.floor((ny+15)/TS);
-    let livre = true;
-    for(let ty=cy0;ty<=cy1;ty++) for(let tx=cx0;tx<=cx1;tx++) if(solido(tx,ty)) livre=false;
-    // NPC bloqueia
-    for(const n of cap.npcs){ if(n.x>=cx0&&n.x<=cx1&&n.y>=cy0&&n.y<=cy1) livre=false; }
-    if(livre){ jog.x=nx; jog.y=ny; }
-    else empurrar(dx,dy);
-    // câmera
-    cam.x = Math.max(0, Math.min(cap.mapa[0].length*TS-VW, jog.x+8-VW/2));
-    cam.y = Math.max(0, Math.min(cap.mapa.length*TS-VH,   jog.y+8-VH/2));
-  }
-  let empurraCd = 0;
   function empurrar(dx,dy){
-    if(empurraCd>0) return;
-    const {tx,ty} = alvoFrente();
-    if(caixote.x!==tx || caixote.y!==ty) return;
-    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y) return;  // já está no lugar
-    const ax = caixote.x+dx, ay = caixote.y+dy;
-    if(solido(ax,ay)) return;
-    if(cap.npcs.some(n=>n.x===ax&&n.y===ay)) return;
+    if(!cap.caixote||empurraCd>0) return;
+    const {tx,ty}=alvoFrente();
+    if(caixote.x!==tx||caixote.y!==ty) return;
+    if(caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y) return;
+    const ax=caixote.x+dx, ay=caixote.y+dy;
+    if(solidoSemCaixote(ax,ay)) return;
+    if((cap.npcs||[]).some(n=>n.x===ax&&n.y===ay)) return;
     caixote.x=ax; caixote.y=ay; empurraCd=18; beep(220,.09,'square',.08);
-    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y){
+    if(caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y){
       sOk(); aviso('O caixote está no lugar certo!');
       setTimeout(()=>{ if(!dial) falar([['LUÍSA','Agora eu subo aqui e alcanço o sino!'],
-        ['LUÍSA','É só ficar do lado do caixote, olhar pro sino e apertar A.']]); },500);
+        ['LUÍSA','É só ficar do lado, olhar pro sino e apertar A.']]); },500);
     } else if(caixotePreso()){
-      setTimeout(()=>{ if(!dial) falar([['LUÍSA','Ops, o caixote ficou entalado num canto.'],
-        ['LUÍSA','Sem problema — é só apertar 🪄 Arrumar caixote que ele volta pro começo.']]); },400);
+      setTimeout(()=>{ if(!dial) falar([['LUÍSA','Ops, o caixote ficou entalado.'],
+        ['LUÍSA','É só apertar 🪄 Arrumar caixote que ele volta pro começo.']]); },400);
     }
     salvar();
   }
 
-  /* ---------------- LOOP ---------------- */
-  function loop(){
-    if(!rodando) return;
-    tempo++; if(empurraCd>0) empurraCd--;
-    passo(); desenhar();
-    raf = requestAnimationFrame(loop);
+  /* ================== MOVIMENTO ================== */
+  function passo(){
+    if(dial||miniAberto){ jog.andando=false; return; }
+    let dx=0,dy=0;
+    if(btn.left)dx=-1; else if(btn.right)dx=1; else if(btn.up)dy=-1; else if(btn.down)dy=1;
+    jog.andando=!!(dx||dy);
+    let vy=0;
+    if(cap.vento){ ventoT++; rajada=(ventoT%300)<80; if(rajada) vy=0.42; }
+    if(!jog.andando && !vy) return;
+    if(dx||dy) jog.dir = dx<0?'left':dx>0?'right':dy<0?'up':'down';
+    const v=1.1, nx=jog.x+dx*v, ny=jog.y+dy*v+vy;
+    const cx0=Math.floor((nx+3)/TS), cx1=Math.floor((nx+12)/TS);
+    const cy0=Math.floor((ny+7)/TS),  cy1=Math.floor((ny+15)/TS);
+    let livre=true;
+    for(let ty=cy0;ty<=cy1;ty++)for(let tx=cx0;tx<=cx1;tx++) if(solido(tx,ty)) livre=false;
+    for(const n of (cap.npcs||[])){ if(n.oculto&&!prontoParaFinal()) continue;
+      if(n.x>=cx0&&n.x<=cx1&&n.y>=cy0&&n.y<=cy1) livre=false; }
+    if(livre){ jog.x=nx; jog.y=ny; } else if(dx||dy) empurrar(dx,dy);
+    cam.x=Math.max(0,Math.min(cap.mapa[0].length*TS-VW,jog.x+8-VW/2));
+    cam.y=Math.max(0,Math.min(cap.mapa.length*TS-VH,jog.y+8-VH/2));
+    // chegar no ponto final conclui sozinho (sem depender de apertar A)
+    if(cap.entrega && todasFeitas() && !entregue && !dial){
+      const jx=(jog.x+8)/TS, jy=(jog.y+8)/TS;
+      if(Math.hypot(jx-cap.entrega.x, jy-cap.entrega.y) < 1.6) concluir();
+    }
   }
+  function loop(){ if(!rodando) return; tempo++; if(empurraCd>0)empurraCd--; passo(); desenhar();
+    raf=requestAnimationFrame(loop); }
 
-  /* ---------------- SAVE ---------------- */
-  const KEY='luisa_rpg_v1';
-  function salvar(){
-    try{ localStorage.setItem(KEY, JSON.stringify({
-      cap:cap.id, x:jog.x, y:jog.y, cx:caixote.x, cy:caixote.y,
-      itens:[...coletados], fim:entregue })); }catch(e){}
-  }
+  /* ================== SAVE ================== */
+  const KEY='luisa_rpg_v2';
+  const lerSave=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } };
+  const gravar=o=>{ try{ localStorage.setItem(KEY,JSON.stringify(o)); }catch(e){} };
+  function salvar(){ const s=lerSave(); s.dif=dif;
+    s[cap.id]={x:jog.x,y:jog.y,cx:caixote.x,cy:caixote.y,f:[...feitos],fim:entregue,dicas:dicasRestantes};
+    gravar(s); }
   function carregar(){
-    try{
-      const s = JSON.parse(localStorage.getItem(KEY)||'null');
-      if(!s || s.cap!==cap.id) return false;
-      jog.x=s.x; jog.y=s.y; caixote.x=s.cx; caixote.y=s.cy;
-      coletados = new Set(s.itens||[]); entregue=!!s.fim;
-      return true;
-    }catch(e){ return false; }
+    const s=lerSave()[cap.id]; if(!s) return false;
+    jog.x=s.x; jog.y=s.y; if(cap.caixote){caixote.x=s.cx;caixote.y=s.cy;}
+    feitos=new Set(s.f||[]); entregue=!!s.fim;
+    dicasRestantes=(typeof s.dicas==='number')?s.dicas:D().dicas;
+    return true;
   }
-  function limparSave(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+  function limparCap(){ const s=lerSave(); delete s[cap.id]; gravar(s); }
+  function marcarCapConcluido(id){ const s=lerSave(); s.done=[...new Set([...(s.done||[]),id])]; gravar(s); }
+  const capConcluido=id=>(lerSave().done||[]).includes(id);
+  const desbloqueado=i=> i===0 || capConcluido(CAPS[i-1].id);
 
-  /* ---------------- CONTROLES ---------------- */
+  /* ================== UI ================== */
+  function objetivoUI(){
+    const el=document.getElementById('rpgObj'), t=document.getElementById('rpgObjT');
+    if(!el||!t) return;
+    if(!D().obj){
+      el.innerHTML='<span class="objIt">'+feitos.size+' de '+cap.metas.length+'</span>';
+      t.textContent = entregue?'Capítulo completo! 🌈':cap.objetivo; return;
+    }
+    el.innerHTML=cap.metas.map(m=>{
+      const ok=feitos.has(m.id);
+      return '<span class="objIt '+(ok?'ok':'')+'">'+(ok?'✅':m.icone)+' '+m.nome+'</span>';
+    }).join('');
+    t.textContent = entregue ? 'Capítulo completo! 🌈'
+      : (todasFeitas() ? (cap.entregaTxt||'Vá até o ponto final') : cap.objetivo);
+  }
+  function montarMenu(){
+    const box=document.getElementById('rpgMenu'); box.innerHTML='';
+    CAPS.forEach((c,i)=>{
+      const livre=desbloqueado(i), feito=capConcluido(c.id);
+      const b=document.createElement(livre?'button':'div');
+      b.className='avCard'+(livre?'':' breve'); b.style.setProperty('--i',i);
+      b.innerHTML='<span class="avEm">'+c.emoji+'</span><b>'+c.titulo+'</b><span>'+c.subtitulo+'</span>'+
+        '<i>'+(livre?c.resumo:'🔒 Termine o capítulo anterior')+'</i>'+(feito?'<em class="avOk">✅ completo</em>':'');
+      if(livre) b.addEventListener('click',()=>{ beep(740,.09); iniciar(c); });
+      box.appendChild(b);
+    });
+    const dc=document.getElementById('rpgDifChips');
+    if(dc){
+      if(!dc.dataset.pronto){
+        dc.dataset.pronto='1';
+        dc.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('click',()=>{
+          dc.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+          ch.classList.add('on'); dif=ch.dataset.d;
+          const s=lerSave(); s.dif=dif; gravar(s); beep(700,.08);
+        }));
+      }
+      dc.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x.dataset.d===dif));
+    }
+  }
+
+  /* ================== CONTROLES ================== */
   function ligarControles(){
-    const mapa = {up:'rpgUp',down:'rpgDown',left:'rpgLeft',right:'rpgRight'};
-    Object.entries(mapa).forEach(([k,id])=>{
-      const el = document.getElementById(id);
-      const on = e=>{ e.preventDefault(); btn[k]=1; el.classList.add('press'); };
-      const off= e=>{ e.preventDefault(); btn[k]=0; el.classList.remove('press'); };
+    const mp={up:'rpgUp',down:'rpgDown',left:'rpgLeft',right:'rpgRight'};
+    Object.entries(mp).forEach(([k,id])=>{
+      const el=document.getElementById(id);
+      const on=e=>{e.preventDefault();btn[k]=1;el.classList.add('press')};
+      const off=e=>{e.preventDefault();btn[k]=0;el.classList.remove('press')};
       el.addEventListener('pointerdown',on); el.addEventListener('pointerup',off);
       el.addEventListener('pointerleave',off); el.addEventListener('pointercancel',off);
     });
-    const a = document.getElementById('rpgA');
-    a.addEventListener('pointerdown',e=>{ e.preventDefault(); a.classList.add('press'); agir(); });
-    a.addEventListener('pointerup',e=>{ e.preventDefault(); a.classList.remove('press'); });
+    const a=document.getElementById('rpgA');
+    a.addEventListener('pointerdown',e=>{e.preventDefault();a.classList.add('press');agir()});
+    a.addEventListener('pointerup',e=>{e.preventDefault();a.classList.remove('press')});
     document.getElementById('rpgDialogo').addEventListener('click',()=>avancarDialogo());
-    addEventListener('keydown',e=>{
-      if(atual!=='vRpg') return;
-      const k=e.key;
+    addEventListener('keydown',e=>{ if(atual!=='vRpg')return; const k=e.key;
       if(k==='ArrowUp')btn.up=1; if(k==='ArrowDown')btn.down=1;
       if(k==='ArrowLeft')btn.left=1; if(k==='ArrowRight')btn.right=1;
-      if(k===' '||k==='Enter'||k==='z'||k==='Z'){ e.preventDefault(); agir(); }
-    });
-    addEventListener('keyup',e=>{
-      const k=e.key;
+      if(k===' '||k==='Enter'||k==='z'||k==='Z'){e.preventDefault();agir();} });
+    addEventListener('keyup',e=>{ const k=e.key;
       if(k==='ArrowUp')btn.up=0; if(k==='ArrowDown')btn.down=0;
-      if(k==='ArrowLeft')btn.left=0; if(k==='ArrowRight')btn.right=0;
-    });
+      if(k==='ArrowLeft')btn.left=0; if(k==='ArrowRight')btn.right=0; });
   }
 
-  /* ---------------- API ---------------- */
-  function montarMenu(){
-    const box = document.getElementById('rpgMenu');
-    box.innerHTML='';
-    AVENTURAS.forEach((av,ai)=>{
-      av.caps.forEach((c,ci)=>{
-        const b=document.createElement('button');
-        b.className='avCard'; b.style.setProperty('--i',ci);
-        b.innerHTML = `<span class="avEm">${av.emoji}</span>
-          <b>${c.titulo}</b><span>${c.subtitulo}</span>
-          <i>${av.resumo}</i>`;
-        b.addEventListener('click',()=>{ beep(740,.09); iniciar(c); });
-        box.appendChild(b);
-      });
-      const b=document.createElement('div');
-      b.className='avCard breve';
-      b.innerHTML=`<span class="avEm">🌲</span><b>Floresta Sussurrante</b>
-        <span>Capítulo 2 · a Cor da Vida</span><i>Em breve</i>`;
-      box.appendChild(b);
-    });
-  }
-
-  function reiniciarCap(){ limparSave(); iniciar(cap, true); }
-
-
-  function iniciar(c, forcarNovo){
-    // encerra qualquer loop anterior — sem isso o requestAnimationFrame duplica
-    rodando=false; if(raf){ cancelAnimationFrame(raf); raf=null; }
-    dial=null; const dEl=document.getElementById('rpgDialogo'); if(dEl) dEl.classList.remove('on');
-    const winEl=document.getElementById('win'); if(winEl) winEl.classList.remove('on');
-    btn={up:0,down:0,left:0,right:0,a:0};
+  /* ================== CICLO ================== */
+  function iniciar(c,forcarNovo){
+    rodando=false; if(raf){cancelAnimationFrame(raf);raf=null;}
+    dial=null; fecharMini();
+    const de=document.getElementById('rpgDialogo'); if(de)de.classList.remove('on');
+    const we=document.getElementById('win'); if(we)we.classList.remove('on');
+    btn={up:0,down:0,left:0,right:0};
     document.querySelectorAll('.dpad button.press').forEach(b=>b.classList.remove('press'));
-    cap = c;
+    cap=c;
     document.getElementById('rpgMenuWrap').style.display='none';
     document.getElementById('rpgJogo').style.display='block';
-    cv = document.getElementById('rpgCanvas'); ctx = cv.getContext('2d');
-    cv.width=VW; cv.height=VH;
-    coletados=new Set(); entregue=false; falouCom=new Set(); empurraCd=0; tempo=0;
-    caixote.x=cap.caixote.x; caixote.y=cap.caixote.y;
+    const ba=document.getElementById('rpgArrumar'); if(ba) ba.style.display=cap.caixote?'':'none';
+    cv=document.getElementById('rpgCanvas'); ctx=cv.getContext('2d'); cv.width=VW; cv.height=VH;
+    feitos=new Set(); entregue=false; falouCom=new Set(); empurraCd=0; tempo=0; ventoT=0; rajada=false;
+    dicasRestantes=D().dicas;
+    if(cap.caixote){ caixote.x=cap.caixote.x; caixote.y=cap.caixote.y; }
     jog.x=cap.inicio.x*TS; jog.y=cap.inicio.y*TS; jog.dir='down';
-    const tinha = !forcarNovo && carregar();
-    saturacao = entregue?1:(coletados.size?.25+coletados.size*.25:0);
-    aplicarCor(); objetivoUI();
-    cam.x = Math.max(0, Math.min(cap.mapa[0].length*TS-VW, jog.x+8-VW/2));
-    cam.y = Math.max(0, Math.min(cap.mapa.length*TS-VH,   jog.y+8-VH/2));
+    const tinha=!forcarNovo && carregar();
+    saturacao=entregue?1:(feitos.size?.22+feitos.size*(0.78/cap.metas.length):0);
+    aplicarCor(); objetivoUI(); atualizarBotaoDica();
+    cam.x=Math.max(0,Math.min(cap.mapa[0].length*TS-VW,jog.x+8-VW/2));
+    cam.y=Math.max(0,Math.min(cap.mapa.length*TS-VH,jog.y+8-VH/2));
     rodando=true; loop();
-    if(!tinha) setTimeout(()=>falar(cap.abertura),350);
+    if(!tinha){
+      const tut = dif==='facil' ? [['COMO JOGAR','Use as setas ▲▼◀▶ para andar.'],
+        ['COMO JOGAR','Chegue pertinho e aperte A para falar e agir.'],
+        ['COMO JOGAR','A seta amarela mostra pra onde ir. Travou? Aperte 💡 Dica.']] : [];
+      setTimeout(()=>falar([...cap.abertura,...tut]),350);
+    }
   }
-
+  function reiniciarCap(){ limparCap(); iniciar(cap,true); }
   function abrir(){
+    const s=lerSave(); if(s.dif&&DIF[s.dif]) dif=s.dif;
     document.getElementById('rpgMenuWrap').style.display='block';
     document.getElementById('rpgJogo').style.display='none';
-    montarMenu();
-    if(!pronto) carregarAtlas();
+    montarMenu(); if(!pronto) carregarAtlas();
   }
-  function fechar(){ rodando=false; if(raf) cancelAnimationFrame(raf); }
+  function fechar(){ rodando=false; if(raf)cancelAnimationFrame(raf); fecharMini(); }
   function voltarMenu(){ fechar(); abrir(); }
+  function boot(){ carregarAtlas(); ligarControles(); const s=lerSave(); if(s.dif&&DIF[s.dif]) dif=s.dif; }
 
-  function boot(){ carregarAtlas(); ligarControles(); }
   return { boot, abrir, fechar, voltarMenu, reiniciar:reiniciarCap, dica:pedirDica, arrumar:arrumarCaixote,
-    _dbg:()=>({x:jog.x/TS,y:jog.y/TS,dir:jog.dir,cx:caixote.x,cy:caixote.y,
-               itens:[...coletados],fim:entregue,dial:!!dial,sat:saturacao}),
-    _tp:(x,y,d)=>{ jog.x=x*TS; jog.y=y*TS; if(d) jog.dir=d;
+    _dbg:()=>({x:jog.x/TS,y:jog.y/TS,dir:jog.dir,cap:cap&&cap.id,dif,cx:caixote.x,cy:caixote.y,
+      feitos:[...feitos],fim:entregue,dial:!!dial,mini:miniAberto,sat:saturacao}),
+    _tp:(x,y,d)=>{ jog.x=x*TS; jog.y=y*TS; if(d)jog.dir=d;
       cam.x=Math.max(0,Math.min(cap.mapa[0].length*TS-VW,jog.x+8-VW/2));
       cam.y=Math.max(0,Math.min(cap.mapa.length*TS-VH,jog.y+8-VH/2)); },
-    _a:()=>agir() };
+    _a:()=>agir(), _cap:i=>iniciar(CAPS[i],true), _dif:d=>{dif=d;},
+    _mapa:()=>cap.mapa, _metas:()=>cap.metas.map(m=>({id:m.id,x:m.x,y:m.y,acao:m.acao})),
+    _feito:id=>{ const m=cap.metas.find(x=>x.id===id); if(m) concluirMeta(m); } };
 })();
 
 document.getElementById('rpgDica').addEventListener('click',()=>RPG.dica());
