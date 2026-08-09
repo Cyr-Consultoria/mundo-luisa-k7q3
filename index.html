@@ -213,6 +213,14 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .avCard i{font-size:13px;opacity:.85;font-style:normal;line-height:1.3;margin-top:4px;padding-right:40px}
 
 #rpgJogo{display:none}
+.rpgObjBar{max-width:640px;margin:0 auto 12px;background:#fff;border-radius:18px;padding:10px 14px;
+  box-shadow:var(--sombra);text-align:center;
+  animation:cardIn var(--dur-med) var(--ease-out) both}
+#rpgObjT{font-size:14px;font-weight:800;letter-spacing:-.01em;margin-bottom:7px}
+#rpgObj{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.objIt{font-size:13px;font-weight:700;background:#F4EDF8;color:var(--tinta);border-radius:999px;
+  padding:5px 11px;opacity:.55;transition:opacity var(--dur-med) var(--ease-out),background var(--dur-med) var(--ease-out)}
+.objIt.ok{opacity:1;background:#DFF6E2;animation:pop 420ms var(--ease-spring)}
 .rpgTela{position:relative;width:100%;max-width:640px;margin:0 auto;border-radius:18px;overflow:hidden;
   box-shadow:var(--sombra);background:#1a1226;border:4px solid #fff;aspect-ratio:3/2}
 #rpgCanvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges;
@@ -353,6 +361,10 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <div id="rpgMenu"></div>
     </div>
     <div id="rpgJogo">
+      <div class="rpgObjBar">
+        <div id="rpgObjT">Ache as 3 coisas que a vila perdeu</div>
+        <div id="rpgObj"></div>
+      </div>
       <div class="rpgTela">
         <canvas id="rpgCanvas" width="240" height="160"></canvas>
         <div id="rpgAviso"></div>
@@ -375,11 +387,14 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
         <button id="rpgA" aria-label="Agir">A</button>
       </div>
       <div class="acoes" style="margin-top:14px">
+        <button class="btn pri" id="rpgDica">💡 Dica</button>
+        <button class="btn" id="rpgArrumar">🪄 Arrumar caixote</button>
         <button class="btn" id="rpgVoltarMenu">📜 Capítulos</button>
-        <button class="btn" id="rpgRecomecar">🔄 Recomeçar capítulo</button>
+        <button class="btn" id="rpgRecomecar">🔄 Recomeçar</button>
       </div>
       <p style="text-align:center;font-size:13px;opacity:.7;margin-top:10px">
-        Use as setas para andar e o botão <b>A</b> para falar, pegar e empurrar.
+        Siga a <b style="color:#C99A00">seta amarela</b>. Use ▲▼◀▶ para andar e <b>A</b> para falar, pegar e empurrar.<br>
+        Travou? Aperte <b>💡 Dica</b>.
       </p>
     </div>
   </section>
@@ -814,13 +829,15 @@ const RPG = (() => {
     caixote:{x:6,y:3},
     alvoCaixote:{x:5,y:2},          // embaixo do telhado onde está o sino
     itens:[
-      {id:'sino',   tile:T.sino,   x:3, y:2, noAlto:true,
+      {id:'sino',   tile:T.sino,   x:3, y:2, noAlto:true, nome:'o sino',
        dica:'O sino está lá em cima, no telhado. Preciso alcançar…',
        pegou:'Peguei o sino! Agora a praça pode tocar de novo.'},
-      {id:'bola',   tile:T.bola,   x:8, y:12,
-       dica:'', pegou:'A bola do Tobias! Ele vai ficar tão feliz.'},
-      {id:'novelo', tile:T.novelo, x:16, y:9,
-       dica:'', pegou:'O novelo da Mel. Ela vai fingir que não ligou.'}
+      {id:'bola',   tile:T.bola,   x:8, y:12, nome:'a bola',
+       dica:'A bola do Tobias caiu no mato, lá embaixo da rua.',
+       pegou:'A bola do Tobias! Ele vai ficar tão feliz.'},
+      {id:'novelo', tile:T.novelo, x:16, y:9, nome:'o novelo',
+       dica:'O novelo da Mel rolou pro outro lado da vila, na direita.',
+       pegou:'O novelo da Mel. Ela vai fingir que não ligou.'}
     ],
     npcs:[
       {id:'mel', sprite:CH.mel, x:10, y:8, nome:'MEL', retrato:null, corNome:'#F0B45A',
@@ -847,7 +864,11 @@ const RPG = (() => {
     abertura:[
       ['LUÍSA','A vila acordou sem cor.'],
       ['LUÍSA','Todo mundo está esperando alguém aparecer pra resolver.'],
-      ['LUÍSA','Então eu vou lá.']
+      ['LUÍSA','Então eu vou lá.'],
+      ['COMO JOGAR','Use as setas ▲▼◀▶ para andar.'],
+      ['COMO JOGAR','Chegue pertinho e aperte A para falar, pegar e empurrar.'],
+      ['COMO JOGAR','A seta amarela mostra pra onde ir.'],
+      ['COMO JOGAR','Perdida? Aperte o botão 💡 Dica quando quiser.']
     ],
     final:[
       ['LUÍSA','O sino, a bola e o novelo. Está tudo aqui.'],
@@ -873,6 +894,7 @@ const RPG = (() => {
   let btn = {up:0,down:0,left:0,right:0,a:0};
   let tempo = 0;
   let saturacao = 0;        // 0 = cinza · 1 = colorido
+  let falouCom = new Set(); // NPCs já conversados (para o balão "!")
 
   /* ---------------- DESENHO ---------------- */
   function tileEm(tx,ty){
@@ -919,12 +941,59 @@ const RPG = (() => {
     });
     // NPCs
     const f = Math.floor(tempo/26)%2;
-    cap.npcs.forEach(n=> dChar(n.sprite+f, n.x*TS-cam.x, n.y*TS-cam.y-8));
+    cap.npcs.forEach(n=>{ dChar(n.sprite+f, n.x*TS-cam.x, n.y*TS-cam.y-8); balaoNpc(n); });
     // jogadora
     const jf = jog.andando ? Math.floor(tempo/9)%2 : 0;
     dChar(CH.luisa[jog.dir]+jf, Math.round(jog.x-cam.x), Math.round(jog.y-cam.y)-8);
-    // HUD
+    setaGuia();
     hud();
+  }
+
+  // --- para onde a Luísa precisa ir agora ---
+  function alvoAtual(){
+    if(entregue) return null;
+    const sino = cap.itens.find(i=>i.noAlto);
+    const caixoteNoLugar = caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y;
+    if(sino && !coletados.has(sino.id) && !caixoteNoLugar)
+      return {x:caixote.x, y:caixote.y, tipo:'caixote'};
+    const pend = cap.itens.filter(i=>!coletados.has(i.id));
+    if(pend.length){
+      const jx=(jog.x+8)/TS, jy=(jog.y+8)/TS;
+      pend.sort((a,b)=>Math.hypot(a.x-jx,a.y-jy)-Math.hypot(b.x-jx,b.y-jy));
+      return {x:pend[0].x, y:pend[0].y, tipo:'item'};
+    }
+    return {x:cap.entrega.x, y:cap.entrega.y, tipo:'entrega'};
+  }
+
+  function setaGuia(){
+    const a = alvoAtual(); if(!a) return;
+    const ax = a.x*TS+8-cam.x, ay = a.y*TS+8-cam.y;
+    const pulso = 1 + Math.sin(tempo/12)*0.18;
+    const dentro = ax>10 && ax<VW-10 && ay>18 && ay<VH-10;
+    let px, py, ang;
+    if(dentro){ px=ax; py=ay-14 - Math.sin(tempo/12)*2; ang=Math.PI/2; }
+    else{
+      const jx = jog.x+8-cam.x, jy = jog.y+8-cam.y;
+      ang = Math.atan2(ay-jy, ax-jx);
+      const r = 26;
+      px = Math.max(12, Math.min(VW-12, jx + Math.cos(ang)*r));
+      py = Math.max(22, Math.min(VH-12, jy + Math.sin(ang)*r));
+    }
+    ctx.save(); ctx.translate(px,py); ctx.rotate(ang); ctx.scale(pulso,pulso);
+    ctx.fillStyle='#FFD84D'; ctx.strokeStyle='#3B2340'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(-4,-5); ctx.lineTo(-1,0); ctx.lineTo(-4,5);
+    ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+
+  // --- balão "!" sobre NPC com quem ela ainda não falou ---
+  function balaoNpc(n){
+    if(falouCom.has(n.id)) return;
+    const bx = n.x*TS+8-cam.x, by = n.y*TS-12-cam.y + Math.sin(tempo/14)*1.5;
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#3B2340'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(bx-5,by-9,10,12,3); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#E5348A'; ctx.font='bold 9px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('!', bx, by-2); ctx.textAlign='left';
   }
 
   function hud(){
@@ -980,6 +1049,7 @@ const RPG = (() => {
     const n = cap.npcs.find(n=>n.x===tx && n.y===ty);
     if(n){
       const fase = entregue ? 'fim' : (coletados.size>0 ? 'meio' : 'inicio');
+      falouCom.add(n.id);
       falar(n.falas[fase].map(t=>[n.nome,t,n.corNome]));
       beep(560,.07); return;
     }
@@ -1013,14 +1083,14 @@ const RPG = (() => {
     }
   }
   function pegar(it){
-    coletados.add(it.id); sOk(); confete(30); salvar();
+    coletados.add(it.id); sOk(); confete(30); salvar(); objetivoUI();
     saturacao = Math.min(1, .25 + coletados.size*.25); aplicarCor();
     if(coletados.size===cap.itens.length){
       setTimeout(()=>falar([['LUÍSA','Achei os três! Agora, pro centro da praça.']]),400);
     }
   }
   function concluir(){
-    entregue = true; salvar();
+    entregue = true; salvar(); objetivoUI();
     falar(cap.final.map(l=>[l[0],l[1]]), ()=>{
       saturacao = 1; aplicarCor(); sWin(); confete(150);
       setTimeout(()=>{
@@ -1028,8 +1098,69 @@ const RPG = (() => {
       },700);
     });
   }
+  function objetivoUI(){
+    const el = document.getElementById('rpgObj'); if(!el) return;
+    const icones = {sino:'🔔', bola:'⚽', novelo:'🧶'};
+    el.innerHTML = cap.itens.map(i=>{
+      const ok = coletados.has(i.id);
+      return `<span class="objIt ${ok?'ok':''}">${ok?'✅':(icones[i.id]||'❔')} ${
+        (i.nome||i.id).replace(/^(o|a) /,'')}</span>`;
+    }).join('');
+    const t = document.getElementById('rpgObjT');
+    if(t) t.textContent = entregue ? 'Capítulo completo! 🌈'
+        : (coletados.size===cap.itens.length ? 'Leve tudo pro meio da rua e aperte A'
+        : 'Ache as 3 coisas que a vila perdeu');
+  }
   function aplicarCor(){
     cv.style.filter = `saturate(${(0.22 + 0.78*saturacao).toFixed(2)}) brightness(${(0.90+0.10*saturacao).toFixed(2)})`;
+  }
+
+  /* ---------------- DICAS ---------------- */
+  function dicaAtual(){
+    if(entregue) return [['DICA','Capítulo completo! Aperte 🔄 Recomeçar para jogar de novo.']];
+    const sino = cap.itens.find(i=>i.noAlto);
+    const noLugar = caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y;
+    if(coletados.size===cap.itens.length)
+      return [['DICA','Você já tem os três!'],['DICA','Vá até o meio da rua larga, onde a seta aponta, e aperte A.']];
+    if(sino && !coletados.has(sino.id) && !noLugar)
+      return [['DICA','O sino está no telhado e eu não alcanço.'],
+              ['DICA','Vá até o caixote de madeira (a seta mostra onde ele está).'],
+              ['DICA','Encoste nele e continue andando: ele se mexe um quadradinho.'],
+              ['DICA','Empurre até o caixote ficar do lado da casa do sino.'],
+              ['DICA','Se ele ficar entalado, aperte 🪄 Arrumar caixote.']];
+    if(sino && !coletados.has(sino.id) && noLugar)
+      return [['DICA','O caixote já está no lugar certo!'],['DICA','Fique do lado dele, olhe pro sino e aperte A.']];
+    const pend = cap.itens.filter(i=>!coletados.has(i.id));
+    return [['DICA', pend[0].dica || ('Procure ' + (pend[0].nome||'o item') + '.')],
+            ['DICA','Siga a seta amarela e aperte A quando chegar perto.']];
+  }
+  function pedirDica(){ if(dial) return; beep(880,.1); falar(dicaAtual()); }
+
+  // reposiciona o caixote no ponto inicial (nunca dá pra travar o jogo)
+  function arrumarCaixote(){
+    if(dial) return;
+    if(caixote.x===cap.caixote.x && caixote.y===cap.caixote.y &&
+       !(caixote.x===cap.alvoCaixote.x&&caixote.y===cap.alvoCaixote.y)){
+      falar([['LUÍSA','O caixote já está no lugar onde ele começou.']]); return;
+    }
+    caixote.x=cap.caixote.x; caixote.y=cap.caixote.y; salvar(); sOk();
+    aviso('O caixote voltou pro começo!');
+    falar([['LUÍSA','Pronto, arrumei o caixote. Dá pra tentar de novo quantas vezes eu quiser.']]);
+  }
+
+  // o caixote ficou sem nenhum lado de onde empurrar?
+  function caixotePreso(){
+    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y) return false;
+    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    return !dirs.some(([dx,dy])=>{
+      const de = {x:caixote.x-dx, y:caixote.y-dy};      // de onde a Luísa empurraria
+      const pa = {x:caixote.x+dx, y:caixote.y+dy};      // pra onde o caixote iria
+      return !solidoSemCaixote(de.x,de.y) && !solidoSemCaixote(pa.x,pa.y);
+    });
+  }
+  function solidoSemCaixote(tx,ty){
+    const c = tileEm(tx,ty);
+    return SOLIDOS.has(c) || c==='C';
   }
 
   /* ---------------- MOVIMENTO ---------------- */
@@ -1068,6 +1199,11 @@ const RPG = (() => {
     caixote.x=ax; caixote.y=ay; empurraCd=18; beep(220,.09,'square',.08);
     if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y){
       sOk(); aviso('O caixote está no lugar certo!');
+      setTimeout(()=>{ if(!dial) falar([['LUÍSA','Agora eu subo aqui e alcanço o sino!'],
+        ['LUÍSA','É só ficar do lado do caixote, olhar pro sino e apertar A.']]); },500);
+    } else if(caixotePreso()){
+      setTimeout(()=>{ if(!dial) falar([['LUÍSA','Ops, o caixote ficou entalado num canto.'],
+        ['LUÍSA','Sem problema — é só apertar 🪄 Arrumar caixote que ele volta pro começo.']]); },400);
     }
     salvar();
   }
@@ -1150,18 +1286,25 @@ const RPG = (() => {
 
   function reiniciarCap(){ limparSave(); iniciar(cap, true); }
 
+
   function iniciar(c, forcarNovo){
+    // encerra qualquer loop anterior — sem isso o requestAnimationFrame duplica
+    rodando=false; if(raf){ cancelAnimationFrame(raf); raf=null; }
+    dial=null; const dEl=document.getElementById('rpgDialogo'); if(dEl) dEl.classList.remove('on');
+    const winEl=document.getElementById('win'); if(winEl) winEl.classList.remove('on');
+    btn={up:0,down:0,left:0,right:0,a:0};
+    document.querySelectorAll('.dpad button.press').forEach(b=>b.classList.remove('press'));
     cap = c;
     document.getElementById('rpgMenuWrap').style.display='none';
     document.getElementById('rpgJogo').style.display='block';
     cv = document.getElementById('rpgCanvas'); ctx = cv.getContext('2d');
     cv.width=VW; cv.height=VH;
-    coletados=new Set(); entregue=false;
+    coletados=new Set(); entregue=false; falouCom=new Set(); empurraCd=0; tempo=0;
     caixote.x=cap.caixote.x; caixote.y=cap.caixote.y;
     jog.x=cap.inicio.x*TS; jog.y=cap.inicio.y*TS; jog.dir='down';
     const tinha = !forcarNovo && carregar();
     saturacao = entregue?1:(coletados.size?.25+coletados.size*.25:0);
-    aplicarCor();
+    aplicarCor(); objetivoUI();
     cam.x = Math.max(0, Math.min(cap.mapa[0].length*TS-VW, jog.x+8-VW/2));
     cam.y = Math.max(0, Math.min(cap.mapa.length*TS-VH,   jog.y+8-VH/2));
     rodando=true; loop();
@@ -1178,7 +1321,7 @@ const RPG = (() => {
   function voltarMenu(){ fechar(); abrir(); }
 
   function boot(){ carregarAtlas(); ligarControles(); }
-  return { boot, abrir, fechar, voltarMenu, reiniciar:reiniciarCap,
+  return { boot, abrir, fechar, voltarMenu, reiniciar:reiniciarCap, dica:pedirDica, arrumar:arrumarCaixote,
     _dbg:()=>({x:jog.x/TS,y:jog.y/TS,dir:jog.dir,cx:caixote.x,cy:caixote.y,
                itens:[...coletados],fim:entregue,dial:!!dial,sat:saturacao}),
     _tp:(x,y,d)=>{ jog.x=x*TS; jog.y=y*TS; if(d) jog.dir=d;
@@ -1187,6 +1330,8 @@ const RPG = (() => {
     _a:()=>agir() };
 })();
 
+document.getElementById('rpgDica').addEventListener('click',()=>RPG.dica());
+document.getElementById('rpgArrumar').addEventListener('click',()=>{beep(700,.09);RPG.arrumar()});
 document.getElementById('rpgVoltarMenu').addEventListener('click',()=>{beep(520,.09);RPG.voltarMenu()});
 document.getElementById('rpgRecomecar').addEventListener('click',()=>{beep(700,.09);RPG.reiniciar()});
 
