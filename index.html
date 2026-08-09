@@ -96,6 +96,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .j2{background:linear-gradient(140deg,#9C86FF,#6B4BE0)}
 .j3{background:linear-gradient(140deg,#4FE0D8,#12A8A0)}
 .j4{background:linear-gradient(140deg,#FFD86B,#F0A20C)}
+.j5{background:linear-gradient(140deg,#7AE0A0,#1E9E6A)}
 
 /* ---------- Chips / seletor segmentado ---------- */
 .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 14px}
@@ -196,6 +197,56 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .saveWrap img{max-width:min(88vw,420px);border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .saveWrap p{color:#fff;font-size:14px;text-align:center;margin:12px 0;font-weight:700}
 
+
+/* ---------- RPG ---------- */
+#rpgMenu{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.avCard{position:relative;border:0;text-align:left;cursor:pointer;border-radius:24px;padding:16px 14px 14px;
+  background:linear-gradient(150deg,#3C2A5E,#1E1533);color:#fff;box-shadow:var(--sombra);
+  display:flex;flex-direction:column;gap:3px;min-height:120px;
+  animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0)*70ms);
+  transition:transform var(--dur-fast) var(--ease-out)}
+.avCard:active{transform:scale(.97)}
+.avCard.breve{opacity:.5;pointer-events:none;background:linear-gradient(150deg,#4A4A5E,#2A2A38)}
+.avCard .avEm{position:absolute;top:10px;right:12px;font-size:34px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+.avCard b{font-size:18px;letter-spacing:-.01em}
+.avCard span{font-size:12px;opacity:.8;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.avCard i{font-size:13px;opacity:.85;font-style:normal;line-height:1.3;margin-top:4px;padding-right:40px}
+
+#rpgJogo{display:none}
+.rpgTela{position:relative;width:100%;max-width:640px;margin:0 auto;border-radius:18px;overflow:hidden;
+  box-shadow:var(--sombra);background:#1a1226;border:4px solid #fff;aspect-ratio:3/2}
+#rpgCanvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges;
+  transition:filter 600ms var(--ease-out)}
+#rpgAviso{position:absolute;left:50%;top:22px;transform:translate(-50%,-8px);opacity:0;pointer-events:none;
+  background:rgba(20,14,32,.9);color:#FFECB4;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:800;
+  transition:opacity var(--dur-med) var(--ease-out),transform var(--dur-med) var(--ease-spring);white-space:nowrap;z-index:5}
+#rpgAviso.on{opacity:1;transform:translate(-50%,0)}
+
+#rpgDialogo{position:absolute;left:8px;right:8px;bottom:8px;z-index:6;display:none;gap:10px;
+  background:rgba(20,14,32,.94);border:3px solid #FFECB4;border-radius:14px;padding:10px;cursor:pointer;
+  align-items:flex-start}
+#rpgDialogo.on{display:flex;animation:cardIn 200ms var(--ease-out) both}
+#rpgDialogo .rpgRetrato{width:52px;height:52px;flex:0 0 52px;border-radius:8px;border:2px solid #FFECB4;
+  background:center/cover;image-rendering:pixelated}
+#rpgDialogo .rpgNome{font-size:12px;font-weight:900;letter-spacing:.06em;margin-bottom:3px}
+#rpgDialogo .rpgTexto{font-size:15px;color:#fff;line-height:1.35;font-weight:600}
+#rpgDialogo .rpgTap{font-size:11px;color:#FFECB4;opacity:.7;margin-top:5px}
+
+.rpgCtrl{display:flex;justify-content:space-between;align-items:center;max-width:640px;margin:14px auto 0;
+  gap:12px;padding:0 4px;touch-action:none}
+.dpad{position:relative;width:150px;height:150px;flex:0 0 150px}
+.dpad button{position:absolute;width:52px;height:52px;border:0;border-radius:14px;background:#fff;
+  box-shadow:var(--sombra);font-size:20px;color:var(--tinta);display:grid;place-items:center;cursor:pointer;
+  transition:transform var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out)}
+.dpad button.press{transform:scale(.9);background:#FFD84D}
+#rpgUp{left:49px;top:0}#rpgDown{left:49px;bottom:0}#rpgLeft{left:0;top:49px}#rpgRight{right:0;top:49px}
+#rpgA{width:88px;height:88px;min-width:88px;border:0;border-radius:50%;font-size:26px;font-weight:900;color:#fff;
+  background:linear-gradient(140deg,var(--rosa),var(--lilas));box-shadow:var(--sombra);cursor:pointer;
+  transition:transform var(--dur-fast) var(--ease-out)}
+#rpgA.press{transform:scale(.9)}
+@media(min-width:700px){ .dpad{width:170px;height:170px;flex:0 0 170px} .dpad button{width:58px;height:58px}
+  #rpgUp,#rpgDown{left:56px} #rpgLeft,#rpgRight{top:56px} }
+
 @media(min-width:700px){
   #puz{width:min(70vw,520px)}
   #ateWrap{width:min(70vw,520px)}
@@ -227,6 +278,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <button class="jogo j2" style="--i:1" data-go="vPuz"><span class="em">🧩</span><b>Quebra-cabeça</b><span>Monte a foto deslizando as peças</span></button>
       <button class="jogo j3" style="--i:2" data-go="vDif"><span class="em">🔍</span><b>Ache as Diferenças</b><span>O que mudou na segunda foto?</span></button>
       <button class="jogo j4" style="--i:3" data-go="vAte"><span class="em">✨</span><b>Ateliê de Adesivos</b><span>Decore a sua foto e salve</span></button>
+      <button class="jogo j5" style="--i:4" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
     </div>
   </section>
 
@@ -293,6 +345,44 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       Arraste os adesivos. Toque duas vezes num adesivo para girar e crescer.
     </p>
   </section>
+
+  <!-- AVENTURA (RPG) -->
+  <section class="view" id="vRpg">
+    <div id="rpgMenuWrap">
+      <p style="text-align:center;font-size:14px;opacity:.75;margin:0 0 14px">Escolha um capítulo da aventura</p>
+      <div id="rpgMenu"></div>
+    </div>
+    <div id="rpgJogo">
+      <div class="rpgTela">
+        <canvas id="rpgCanvas" width="240" height="160"></canvas>
+        <div id="rpgAviso"></div>
+        <div id="rpgDialogo">
+          <div class="rpgRetrato"></div>
+          <div style="flex:1">
+            <div class="rpgNome"></div>
+            <div class="rpgTexto"></div>
+            <div class="rpgTap">toque para continuar ▸</div>
+          </div>
+        </div>
+      </div>
+      <div class="rpgCtrl">
+        <div class="dpad">
+          <button id="rpgUp" aria-label="Cima">▲</button>
+          <button id="rpgLeft" aria-label="Esquerda">◀</button>
+          <button id="rpgRight" aria-label="Direita">▶</button>
+          <button id="rpgDown" aria-label="Baixo">▼</button>
+        </div>
+        <button id="rpgA" aria-label="Agir">A</button>
+      </div>
+      <div class="acoes" style="margin-top:14px">
+        <button class="btn" id="rpgVoltarMenu">📜 Capítulos</button>
+        <button class="btn" id="rpgRecomecar">🔄 Recomeçar capítulo</button>
+      </div>
+      <p style="text-align:center;font-size:13px;opacity:.7;margin-top:10px">
+        Use as setas para andar e o botão <b>A</b> para falar, pegar e empurrar.
+      </p>
+    </div>
+  </section>
 </main>
 
 <canvas id="conf"></canvas>
@@ -349,8 +439,8 @@ document.getElementById('btnSom').addEventListener('click', e=>{
 });
 
 /* =================== Navegação (Direction-aware transition) =================== */
-const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos'};
-const ORD = ['vHome','vMem','vPuz','vDif','vAte'];
+const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vRpg:'Aventura de Luísa'};
+const ORD = ['vHome','vMem','vPuz','vDif','vAte','vRpg'];
 let atual='vHome';
 function irPara(id){
   if(id===atual) return;
@@ -366,6 +456,7 @@ function irPara(id){
   if(id==='vPuz') novoPuzzle(true);
   if(id==='vDif') novoDif();
   if(id==='vAte') novoAtelie(true);
+  if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{beep(740,.09);irPara(b.dataset.go)}));
 document.getElementById('btnBack').addEventListener('click',()=>{beep(520,.09);pararTimers();irPara('vHome')});
@@ -659,8 +750,450 @@ function salvarArte(){
 }
 document.getElementById('saveFecha').addEventListener('click',()=>document.getElementById('saveWrap').classList.remove('on'));
 
+/* =================== 5) AVENTURA (RPG) =================== */
+const ATLAS_URL = "data:image/png;base64,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";
+/* ==================================================================
+   MOTOR RPG — Mundo da Luísa
+   Pixel art 16-bit, top-down. Arquitetura multi-aventura.
+   ================================================================== */
+const RPG = (() => {
+  const TS = 16, VW = 240, VH = 160;          // tile size, viewport interno
+  const CH_W = 16, CH_H = 24;                  // sprite de personagem
+
+  // índices no atlas — personagens (linha 0) e tiles (linha 1)
+  const CH = { luisa:{down:0,up:2,left:4,right:6}, mel:8, tobias:10, vovo:12 };
+  const T  = { grama:0, grama2:1, caminho:2, arvore:3, arbusto:4, agua:5, agua2:6,
+               parede:7, janela:8, porta:9, telE:10, telM:11, telD:12,
+               caixote:13, cerca:14, flor:15, sino:16, bola:17, novelo:18, estrela:19, brilho:20 };
+
+  // mapa de caracteres → tile
+  const LEGENDA = {
+    '.':T.grama, ',':T.grama2, '=':T.caminho, 'T':T.arvore, 'a':T.arbusto,
+    '~':T.agua, 'P':T.parede, 'J':T.janela, 'D':T.porta,
+    '1':T.telE, '2':T.telM, '3':T.telD, 'C':T.caixote, '#':T.cerca, 'f':T.flor
+  };
+  const SOLIDOS = new Set(['T','~','P','J','#','1','2','3']);   // D (porta) e C (caixote) têm regra própria
+
+  /* ---------------- ATLAS ---------------- */
+  let atlas = null, pronto = false;
+  function carregarAtlas(cb){
+    atlas = new Image();
+    atlas.onload = () => { pronto = true; cb && cb(); };
+    atlas.src = ATLAS_URL;
+  }
+
+  /* ---------------- AVENTURAS ---------------- */
+  // Cada capítulo é um objeto autocontido. Para criar uma nova aventura,
+  // basta acrescentar outro item em AVENTURAS com seus capítulos.
+  const CAP_VILA = {
+    id:'aurora-1',
+    titulo:'Vila Girassol',
+    subtitulo:'Capítulo 1 · a Cor da Alegria',
+    cor:'#FFD84D',
+    corNome:'amarelo',
+    mapa:[
+      'TTTTTTTTTTTTTTTTTTTT',
+      'T..,.f.....TT..,...T',
+      'T.111.......f......T',
+      'T.PJP...aa.........T',
+      'T.PDP......,.......T',
+      'T....,.............T',
+      'T..a...........a...T',
+      'T==================T',
+      'T....=.......=.....T',
+      'T.,..=..,....=..a..T',
+      'T.111=.......=.....T',
+      'T.PJP=..........f..T',
+      'T.PDP=..a..........T',
+      'T....=.............T',
+      'T..f.=....TT....,..T',
+      'TTTTTTTTTTTTTTTTTTTT'
+    ],
+    inicio:{x:9,y:8},
+    // caixote empurrável
+    caixote:{x:6,y:3},
+    alvoCaixote:{x:5,y:2},          // embaixo do telhado onde está o sino
+    itens:[
+      {id:'sino',   tile:T.sino,   x:3, y:2, noAlto:true,
+       dica:'O sino está lá em cima, no telhado. Preciso alcançar…',
+       pegou:'Peguei o sino! Agora a praça pode tocar de novo.'},
+      {id:'bola',   tile:T.bola,   x:8, y:12,
+       dica:'', pegou:'A bola do Tobias! Ele vai ficar tão feliz.'},
+      {id:'novelo', tile:T.novelo, x:16, y:9,
+       dica:'', pegou:'O novelo da Mel. Ela vai fingir que não ligou.'}
+    ],
+    npcs:[
+      {id:'mel', sprite:CH.mel, x:10, y:8, nome:'MEL', retrato:null, corNome:'#F0B45A',
+       falas:{
+        inicio:['Miau. Tudo cinza.','Perdemos o sino, a bola do Tobias e o meu novelo.','Você é pequena demais pra isso.'],
+        meio:['Tá… você achou um. Sorte.','Ainda faltam os outros.'],
+        fim:['…tá bom. Você conseguiu.','Não vou dizer que eu duvidei. (miau)']
+       }},
+      {id:'tobias', sprite:CH.tobias, x:14, y:11, nome:'TOBIAS', corNome:'#5AA8F0',
+       falas:{
+        inicio:['Minha bola sumiu no mato.','Eu tenho medo de ir lá pegar.'],
+        meio:['Você tá indo mesmo? Sozinha?'],
+        fim:['Você achou tudo! Você é a mais corajosa da vila.']
+       }},
+      {id:'vovo', sprite:CH.vovo, x:5, y:12, nome:'VOVÓ AURORA', corNome:'#C4A0E8',
+       falas:{
+        inicio:['Essa coroa era minha, agora é sua.','Ela não te faz corajosa, minha flor.','Ela só lembra que você já é.'],
+        meio:['Continue. Você está indo bem.'],
+        fim:['Eu te dei a coroa. Quem trouxe a cor de volta foi você.']
+       }}
+    ],
+    // objetivo final: devolver os 3 itens no centro da praça
+    entrega:{x:9,y:7},
+    abertura:[
+      ['LUÍSA','A vila acordou sem cor.'],
+      ['LUÍSA','Todo mundo está esperando alguém aparecer pra resolver.'],
+      ['LUÍSA','Então eu vou lá.']
+    ],
+    final:[
+      ['LUÍSA','O sino, a bola e o novelo. Está tudo aqui.'],
+      ['LUÍSA','Vila Girassol… acorda!'],
+      ['MEL','…miau. Você conseguiu mesmo.']
+    ]
+  };
+
+  const AVENTURAS = [
+    { id:'aurora', titulo:'As Quatro Cores', emoji:'👑',
+      resumo:'O Reino de Aurora perdeu as cores. Ninguém vem salvar — a Luísa é que vai.',
+      caps:[CAP_VILA] }
+  ];
+
+  /* ---------------- ESTADO ---------------- */
+  let cv, ctx, cap, cam={x:0,y:0}, raf=null, rodando=false;
+  let jog = {x:0,y:0,dir:'down',passo:0,andando:false};
+  let caixote = {x:0,y:0};
+  let coletados = new Set();
+  let entregue = false;
+  let dial = null;          // {linhas:[[nome,texto]...], i:0, retrato}
+  let mensagem = null, msgT = 0;
+  let btn = {up:0,down:0,left:0,right:0,a:0};
+  let tempo = 0;
+  let saturacao = 0;        // 0 = cinza · 1 = colorido
+
+  /* ---------------- DESENHO ---------------- */
+  function tileEm(tx,ty){
+    if(ty<0||ty>=cap.mapa.length) return '#';
+    const l = cap.mapa[ty];
+    if(tx<0||tx>=l.length) return '#';
+    return l[tx];
+  }
+  function solido(tx,ty){
+    const c = tileEm(tx,ty);
+    if(c==='C') return true;
+    if(caixote.x===tx && caixote.y===ty) return true;
+    return SOLIDOS.has(c);
+  }
+  function dTile(idx,px,py){
+    ctx.drawImage(atlas, idx*TS, CH_H, TS, TS, px, py, TS, TS);
+  }
+  function dChar(idx,px,py){
+    ctx.drawImage(atlas, idx*CH_W, 0, CH_W, CH_H, px, py, CH_W, CH_H);
+  }
+
+  function desenhar(){
+    ctx.imageSmoothingEnabled = false;
+    // chão
+    const t0x = Math.floor(cam.x/TS), t0y = Math.floor(cam.y/TS);
+    for(let ty=t0y; ty<=t0y+VH/TS+1; ty++){
+      for(let tx=t0x; tx<=t0x+VW/TS+1; tx++){
+        const c = tileEm(tx,ty);
+        let idx = LEGENDA[c];
+        if(idx===undefined) idx = T.grama;
+        if(c==='~') idx = (Math.floor(tempo/22)%2) ? T.agua2 : T.agua;
+        if(SOLIDOS.has(c) && c!=='~') dTile(T.grama, tx*TS-cam.x, ty*TS-cam.y);   // base sob objetos
+        dTile(idx, tx*TS-cam.x, ty*TS-cam.y);
+      }
+    }
+    // caixote
+    dTile(T.caixote, caixote.x*TS-cam.x, caixote.y*TS-cam.y);
+    // itens no chão
+    cap.itens.forEach(it=>{
+      if(coletados.has(it.id)) return;
+      const flut = Math.sin(tempo/16 + it.x)*1.2;
+      dTile(it.tile, it.x*TS-cam.x, it.y*TS-cam.y + flut);
+      if(Math.floor(tempo/20)%3===0) dTile(T.brilho, it.x*TS-cam.x, it.y*TS-cam.y-6);
+    });
+    // NPCs
+    const f = Math.floor(tempo/26)%2;
+    cap.npcs.forEach(n=> dChar(n.sprite+f, n.x*TS-cam.x, n.y*TS-cam.y-8));
+    // jogadora
+    const jf = jog.andando ? Math.floor(tempo/9)%2 : 0;
+    dChar(CH.luisa[jog.dir]+jf, Math.round(jog.x-cam.x), Math.round(jog.y-cam.y)-8);
+    // HUD
+    hud();
+  }
+
+  function hud(){
+    ctx.fillStyle='rgba(20,14,32,.72)';
+    ctx.fillRect(0,0,VW,14);
+    ctx.fillStyle='#FFECB4';
+    ctx.font='8px monospace'; ctx.textBaseline='middle';
+    ctx.fillText(cap.titulo.toUpperCase(), 4, 7);
+    let x = VW-6;
+    for(let i=cap.itens.length-1;i>=0;i--){
+      const it=cap.itens[i];
+      ctx.globalAlpha = coletados.has(it.id)?1:.25;
+      ctx.drawImage(atlas, it.tile*TS, CH_H, TS,TS, x-12, -1, 12,12);
+      x-=14;
+    }
+    ctx.globalAlpha=1;
+  }
+
+  /* ---------------- DIÁLOGO (DOM, fora do canvas) ---------------- */
+  const dlgEl = () => document.getElementById('rpgDialogo');
+  function falar(linhas, cb){
+    dial = {linhas:linhas.slice(), i:0, cb};
+    mostrarLinha();
+  }
+  function mostrarLinha(){
+    const el = dlgEl();
+    if(!dial || dial.i>=dial.linhas.length){
+      el.classList.remove('on'); const cb = dial&&dial.cb; dial=null; cb&&cb(); return;
+    }
+    const [nome,texto] = dial.linhas[dial.i];
+    const ehLuisa = nome==='LUÍSA';
+    el.querySelector('.rpgNome').textContent = nome;
+    el.querySelector('.rpgNome').style.color = ehLuisa ? '#FFD84D' : (dial.linhas[dial.i][2]||'#8FE3FF');
+    el.querySelector('.rpgTexto').textContent = texto;
+    const ret = el.querySelector('.rpgRetrato');
+    ret.style.display = ehLuisa ? 'block' : 'none';
+    el.classList.add('on');
+  }
+  function avancarDialogo(){ if(dial){ dial.i++; mostrarLinha(); return true; } return false; }
+
+  function aviso(txt){ mensagem = txt; msgT = 150; const e=document.getElementById('rpgAviso'); e.textContent=txt; e.classList.add('on'); setTimeout(()=>e.classList.remove('on'),2200); }
+
+  /* ---------------- AÇÃO (botão A) ---------------- */
+  function alvoFrente(){
+    const tx = Math.floor((jog.x+8)/TS) + (jog.dir==='left'?-1:jog.dir==='right'?1:0);
+    const ty = Math.floor((jog.y+8)/TS) + (jog.dir==='up'?-1:jog.dir==='down'?1:0);
+    return {tx,ty};
+  }
+  function agir(){
+    if(avancarDialogo()) return;
+    const {tx,ty} = alvoFrente();
+    // NPC?
+    const n = cap.npcs.find(n=>n.x===tx && n.y===ty);
+    if(n){
+      const fase = entregue ? 'fim' : (coletados.size>0 ? 'meio' : 'inicio');
+      falar(n.falas[fase].map(t=>[n.nome,t,n.corNome]));
+      beep(560,.07); return;
+    }
+    // item no chão?
+    const it = cap.itens.find(i=>!coletados.has(i.id) && i.x===tx && i.y===ty);
+    if(it){
+      if(it.noAlto){
+        const emCima = (caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y);
+        if(!emCima){ falar([['LUÍSA',it.dica],['LUÍSA','Se eu não alcanço, eu mudo de lugar. Cadê aquele caixote?']]); return; }
+        falar([['LUÍSA','Subi no caixote…'],['LUÍSA',it.pegou]], ()=>pegar(it));
+        return;
+      }
+      falar([['LUÍSA',it.pegou]], ()=>pegar(it));
+      return;
+    }
+    // item no alto alcançável estando ao lado do caixote posicionado
+    const alvo = cap.itens.find(i=>i.noAlto && !coletados.has(i.id));
+    if(alvo && caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y){
+      if(Math.abs(tx-caixote.x)<=1 && Math.abs(ty-caixote.y)<=1){
+        falar([['LUÍSA','Subi no caixote…'],['LUÍSA',alvo.pegou]], ()=>pegar(alvo));
+        return;
+      }
+    }
+    // entrega
+    if(coletados.size===cap.itens.length && !entregue &&
+       Math.abs(tx-cap.entrega.x)<=1 && Math.abs(ty-cap.entrega.y)<=1){
+      concluir(); return;
+    }
+    if(coletados.size===cap.itens.length && !entregue){
+      falar([['LUÍSA','Tenho tudo! Preciso levar pro centro da praça.']]);
+    }
+  }
+  function pegar(it){
+    coletados.add(it.id); sOk(); confete(30); salvar();
+    saturacao = Math.min(1, .25 + coletados.size*.25); aplicarCor();
+    if(coletados.size===cap.itens.length){
+      setTimeout(()=>falar([['LUÍSA','Achei os três! Agora, pro centro da praça.']]),400);
+    }
+  }
+  function concluir(){
+    entregue = true; salvar();
+    falar(cap.final.map(l=>[l[0],l[1]]), ()=>{
+      saturacao = 1; aplicarCor(); sWin(); confete(150);
+      setTimeout(()=>{
+        vencer('🌈','Capítulo 1 completo!',`${cap.titulo} voltou a ter cor.`, ()=>{ reiniciarCap(); });
+      },700);
+    });
+  }
+  function aplicarCor(){
+    cv.style.filter = `saturate(${(0.22 + 0.78*saturacao).toFixed(2)}) brightness(${(0.90+0.10*saturacao).toFixed(2)})`;
+  }
+
+  /* ---------------- MOVIMENTO ---------------- */
+  function passo(){
+    if(dial) { jog.andando=false; return; }
+    let dx=0, dy=0;
+    if(btn.left) dx=-1; else if(btn.right) dx=1;
+    else if(btn.up) dy=-1; else if(btn.down) dy=1;
+    jog.andando = !!(dx||dy);
+    if(!jog.andando) return;
+    jog.dir = dx<0?'left':dx>0?'right':dy<0?'up':'down';
+    const v = 1.1;
+    const nx = jog.x + dx*v, ny = jog.y + dy*v;
+    // caixa de colisão: pés da personagem
+    const cx0 = Math.floor((nx+3)/TS), cx1 = Math.floor((nx+12)/TS);
+    const cy0 = Math.floor((ny+7)/TS),  cy1 = Math.floor((ny+15)/TS);
+    let livre = true;
+    for(let ty=cy0;ty<=cy1;ty++) for(let tx=cx0;tx<=cx1;tx++) if(solido(tx,ty)) livre=false;
+    // NPC bloqueia
+    for(const n of cap.npcs){ if(n.x>=cx0&&n.x<=cx1&&n.y>=cy0&&n.y<=cy1) livre=false; }
+    if(livre){ jog.x=nx; jog.y=ny; }
+    else empurrar(dx,dy);
+    // câmera
+    cam.x = Math.max(0, Math.min(cap.mapa[0].length*TS-VW, jog.x+8-VW/2));
+    cam.y = Math.max(0, Math.min(cap.mapa.length*TS-VH,   jog.y+8-VH/2));
+  }
+  let empurraCd = 0;
+  function empurrar(dx,dy){
+    if(empurraCd>0) return;
+    const {tx,ty} = alvoFrente();
+    if(caixote.x!==tx || caixote.y!==ty) return;
+    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y) return;  // já está no lugar
+    const ax = caixote.x+dx, ay = caixote.y+dy;
+    if(solido(ax,ay)) return;
+    if(cap.npcs.some(n=>n.x===ax&&n.y===ay)) return;
+    caixote.x=ax; caixote.y=ay; empurraCd=18; beep(220,.09,'square',.08);
+    if(caixote.x===cap.alvoCaixote.x && caixote.y===cap.alvoCaixote.y){
+      sOk(); aviso('O caixote está no lugar certo!');
+    }
+    salvar();
+  }
+
+  /* ---------------- LOOP ---------------- */
+  function loop(){
+    if(!rodando) return;
+    tempo++; if(empurraCd>0) empurraCd--;
+    passo(); desenhar();
+    raf = requestAnimationFrame(loop);
+  }
+
+  /* ---------------- SAVE ---------------- */
+  const KEY='luisa_rpg_v1';
+  function salvar(){
+    try{ localStorage.setItem(KEY, JSON.stringify({
+      cap:cap.id, x:jog.x, y:jog.y, cx:caixote.x, cy:caixote.y,
+      itens:[...coletados], fim:entregue })); }catch(e){}
+  }
+  function carregar(){
+    try{
+      const s = JSON.parse(localStorage.getItem(KEY)||'null');
+      if(!s || s.cap!==cap.id) return false;
+      jog.x=s.x; jog.y=s.y; caixote.x=s.cx; caixote.y=s.cy;
+      coletados = new Set(s.itens||[]); entregue=!!s.fim;
+      return true;
+    }catch(e){ return false; }
+  }
+  function limparSave(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+
+  /* ---------------- CONTROLES ---------------- */
+  function ligarControles(){
+    const mapa = {up:'rpgUp',down:'rpgDown',left:'rpgLeft',right:'rpgRight'};
+    Object.entries(mapa).forEach(([k,id])=>{
+      const el = document.getElementById(id);
+      const on = e=>{ e.preventDefault(); btn[k]=1; el.classList.add('press'); };
+      const off= e=>{ e.preventDefault(); btn[k]=0; el.classList.remove('press'); };
+      el.addEventListener('pointerdown',on); el.addEventListener('pointerup',off);
+      el.addEventListener('pointerleave',off); el.addEventListener('pointercancel',off);
+    });
+    const a = document.getElementById('rpgA');
+    a.addEventListener('pointerdown',e=>{ e.preventDefault(); a.classList.add('press'); agir(); });
+    a.addEventListener('pointerup',e=>{ e.preventDefault(); a.classList.remove('press'); });
+    document.getElementById('rpgDialogo').addEventListener('click',()=>avancarDialogo());
+    addEventListener('keydown',e=>{
+      if(atual!=='vRpg') return;
+      const k=e.key;
+      if(k==='ArrowUp')btn.up=1; if(k==='ArrowDown')btn.down=1;
+      if(k==='ArrowLeft')btn.left=1; if(k==='ArrowRight')btn.right=1;
+      if(k===' '||k==='Enter'||k==='z'||k==='Z'){ e.preventDefault(); agir(); }
+    });
+    addEventListener('keyup',e=>{
+      const k=e.key;
+      if(k==='ArrowUp')btn.up=0; if(k==='ArrowDown')btn.down=0;
+      if(k==='ArrowLeft')btn.left=0; if(k==='ArrowRight')btn.right=0;
+    });
+  }
+
+  /* ---------------- API ---------------- */
+  function montarMenu(){
+    const box = document.getElementById('rpgMenu');
+    box.innerHTML='';
+    AVENTURAS.forEach((av,ai)=>{
+      av.caps.forEach((c,ci)=>{
+        const b=document.createElement('button');
+        b.className='avCard'; b.style.setProperty('--i',ci);
+        b.innerHTML = `<span class="avEm">${av.emoji}</span>
+          <b>${c.titulo}</b><span>${c.subtitulo}</span>
+          <i>${av.resumo}</i>`;
+        b.addEventListener('click',()=>{ beep(740,.09); iniciar(c); });
+        box.appendChild(b);
+      });
+      const b=document.createElement('div');
+      b.className='avCard breve';
+      b.innerHTML=`<span class="avEm">🌲</span><b>Floresta Sussurrante</b>
+        <span>Capítulo 2 · a Cor da Vida</span><i>Em breve</i>`;
+      box.appendChild(b);
+    });
+  }
+
+  function reiniciarCap(){ limparSave(); iniciar(cap, true); }
+
+  function iniciar(c, forcarNovo){
+    cap = c;
+    document.getElementById('rpgMenuWrap').style.display='none';
+    document.getElementById('rpgJogo').style.display='block';
+    cv = document.getElementById('rpgCanvas'); ctx = cv.getContext('2d');
+    cv.width=VW; cv.height=VH;
+    coletados=new Set(); entregue=false;
+    caixote.x=cap.caixote.x; caixote.y=cap.caixote.y;
+    jog.x=cap.inicio.x*TS; jog.y=cap.inicio.y*TS; jog.dir='down';
+    const tinha = !forcarNovo && carregar();
+    saturacao = entregue?1:(coletados.size?.25+coletados.size*.25:0);
+    aplicarCor();
+    cam.x = Math.max(0, Math.min(cap.mapa[0].length*TS-VW, jog.x+8-VW/2));
+    cam.y = Math.max(0, Math.min(cap.mapa.length*TS-VH,   jog.y+8-VH/2));
+    rodando=true; loop();
+    if(!tinha) setTimeout(()=>falar(cap.abertura),350);
+  }
+
+  function abrir(){
+    document.getElementById('rpgMenuWrap').style.display='block';
+    document.getElementById('rpgJogo').style.display='none';
+    montarMenu();
+    if(!pronto) carregarAtlas();
+  }
+  function fechar(){ rodando=false; if(raf) cancelAnimationFrame(raf); }
+  function voltarMenu(){ fechar(); abrir(); }
+
+  function boot(){ carregarAtlas(); ligarControles(); }
+  return { boot, abrir, fechar, voltarMenu, reiniciar:reiniciarCap,
+    _dbg:()=>({x:jog.x/TS,y:jog.y/TS,dir:jog.dir,cx:caixote.x,cy:caixote.y,
+               itens:[...coletados],fim:entregue,dial:!!dial,sat:saturacao}),
+    _tp:(x,y,d)=>{ jog.x=x*TS; jog.y=y*TS; if(d) jog.dir=d;
+      cam.x=Math.max(0,Math.min(cap.mapa[0].length*TS-VW,jog.x+8-VW/2));
+      cam.y=Math.max(0,Math.min(cap.mapa.length*TS-VH,jog.y+8-VH/2)); },
+    _a:()=>agir() };
+})();
+
+document.getElementById('rpgVoltarMenu').addEventListener('click',()=>{beep(520,.09);RPG.voltarMenu()});
+document.getElementById('rpgRecomecar').addEventListener('click',()=>{beep(700,.09);RPG.reiniciar()});
+
 /* =================== Boot =================== */
 document.getElementById('btnSom').classList.toggle('off',!somOn);
+RPG.boot();
+document.querySelector('#rpgDialogo .rpgRetrato').style.backgroundImage = `url('${IMGS[8]}')`;
 </script>
 </body>
 </html>
