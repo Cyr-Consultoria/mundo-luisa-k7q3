@@ -27,7 +27,7 @@ runtime. Só um script Python costura os pedaços.
 | 4 | Ateliê de Adesivos | canvas com adesivos arrastáveis, exporta PNG |
 | 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 3 / 4 / 5–6 letras |
 | 6 | Conta com a Luísa | contar · somar até 10 · somar e diminuir até 20 |
-| 7 | Aventura de Luísa | RPG top-down 16-bit, 5 capítulos, 3 dificuldades |
+| 7 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
 
 **Regra dos jogos 5 e 6** (calibrados com o Cyr em 2026-08-15: ela lê palavra curta
 sozinha; em conta vai de contar até 10 a somar e subtrair até 20):
@@ -159,8 +159,13 @@ Ações disponíveis em `meta.acao`:
 | `sequencia` | mini-jogo de memória de luzes · `cfg:{n:3}` |
 | `musical` | mini-jogo de repetir notas · `cfg:{n:4}` |
 | `deslizante` | quebra-cabeça sobre uma foto sorteada |
-| `escolha` | pergunta de 2 respostas, ambas válidas |
+| `escolha` | pergunta de 2 respostas, ambas válidas · `cfg:{titulo,pergunta,a,b}` |
+| `palavra` | Monta a Palavra · `cfg:{nivel:3\|4\|6}` |
+| `numero` | Conta com a Luísa · `cfg:{nivel:1\|2\|3, n:3}` — n contas certas concluem |
 | `final` | acender as 4 cores na ordem |
+
+`escolha` era texto fixo do Reflexo dentro da função, e por isso só servia no
+capítulo 3. Hoje aceita `cfg`; sem `cfg` ele cai no Reflexo de sempre.
 
 `exigeTudo:true` = só fica disponível quando todas as outras metas estão feitas.
 
@@ -211,6 +216,12 @@ Cada um destes existe porque quebrou de verdade com a criança jogando:
 5. **Interação com a meta sob os pés**, não só de frente.
 6. **Meta e sprite do NPC no mesmo tile.** Se separar, a criança aperta A na cara do
    personagem e não acontece nada. Foi exatamente o bug do Tobias.
+7. **`#rpgMini` mora fora das views, junto do `#win`.** Dentro da `.rpgTela` ele era
+   cortado pelo `overflow:hidden` — a 375px o viewport do RPG tem ~230px de altura e
+   sumia metade das respostas e o botão Sair. Dentro da `.view` a animação de entrada
+   ainda o prendia num containing block. Agora cobre a tela toda e **bloqueia o ←**:
+   isso só é seguro porque todo mini-jogo tem `#mSair` (o `escolha` não precisa — as
+   duas respostas concluem a meta). **Se criar mini-jogo novo, ele precisa de saída.**
 
 ### 4.5 Save
 
@@ -299,15 +310,25 @@ O script cobre o checklist mínimo e sai com código 1 se qualquer item falhar:
 3. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
 4. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
 5. Errar no jogo de números não remove a opção certa.
-6. Os 5 capítulos concluem de ponta a ponta (via `RPG._feito`).
-7. As 3 dificuldades iniciam.
-8. Sair da Aventura volta ao menu de capítulos.
-9. Sem `overflow-x` a 375, 820 e 1024 px.
-10. Nenhum botão visível abaixo de 44 px de altura.
-11. Zero `pageerror` e zero `console.error`.
+6. As ações `palavra` e `numero` abrem o mini-jogo no mapa e o Sair fecha.
+7. **Alcance real dos capítulos 6–10**: BFS pelo mapa a partir de `inicio`, conferindo
+   que todas as metas e o ponto de entrega são alcançáveis a pé.
+8. Os 10 capítulos concluem de ponta a ponta (via `RPG._feito`).
+9. As 3 dificuldades iniciam.
+10. Sair da Aventura volta ao menu de capítulos.
+11. Sem `overflow-x` a 375, 820 e 1024 px.
+12. Nenhum botão visível abaixo de 44 px de altura.
+13. Zero `pageerror` e zero `console.error`.
 
-Hoje são **31 verificações**. `palAlvo` e `numResposta` são globais de propósito —
+Hoje são **44 verificações**. `palAlvo` e `numResposta` são globais de propósito —
 é por elas que o teste sabe a resposta certa sem adivinhar.
+
+Duas armadilhas que já custaram tempo ao escrever teste aqui:
+
+- **Meta com `antes:` abre diálogo antes do mini-jogo.** Um `_a()` só não abre nada;
+  tem que apertar A até `#rpgMini.on` aparecer.
+- **`RPG._dbg().x` já vem em tiles** (`jog.x/TS`), não em pixels. Dividir por 16 de
+  novo joga o BFS em (1,1) e dá falso positivo.
 
 Salva `tests/ultimo-teste.png` para conferência visual.
 
@@ -319,39 +340,42 @@ em `iniciar()`).
 
 ## 9. Estado atual e o que ficou de fora
 
-**Pronto e publicado:** 6 jogos simples + RPG com 5 capítulos + 3 dificuldades + save +
-progressão travada por capítulo + avanço automático para o capítulo seguinte.
+**Pronto e publicado:** 6 jogos simples + RPG com **10 capítulos em 2 aventuras** +
+3 dificuldades + save + progressão travada por capítulo + avanço automático.
 
-**Aprovado e não feito ainda — segunda aventura, capítulos 6 a 10.**
-O capítulo 5 fecha o arco das Quatro Cores (a Luísa abraça a Sombra), então 6–10 é
-aventura nova: *"Luísa e o Mapa que Faltava"* — Aurora recuperou as cores mas está
-perdendo os nomes e as contas.
+### As duas aventuras
 
-| # | Capítulo | Cenário | Mecânica | Custo |
-|---|---|---|---|---|
-| 6 | Porto das Letras | areia, ponte, água | `palavra` nova · `pegar` | ação nova no motor |
-| 7 | Feira dos Números | vila, telhados | `numero` nova · `escolha` | ação nova no motor |
-| 8 | Caverna dos Ecos | montanha + `escuro:true` | `sequencia` + `palavra` | **zero motor** |
-| 9 | Jardim da Vovó | grama, flor | `deslizante` + `escolha` | **zero motor** |
-| 10 | Torre do Relógio | castelo + `T.cristal` | `numero` + final novo | final novo |
+**1ª · As Quatro Cores** (capítulos 1–5) — Aurora perdeu as cores. Fecha com a Luísa
+reconhecendo a Sombra como parte dela. **Arco encerrado: não estique.**
 
-Notas de planejamento:
+**2ª · O Mapa que Faltava** (capítulos 6–10) — Aurora recuperou as cores, mas está
+perdendo os nomes e as contas. A Sombra vem junto, agora como companheira.
 
-- Os mini-jogos dos jogos 5 e 6 já existem; virar `acao` de meta é envelopá-los,
-  como o `deslizante` já faz no capítulo 3.
-- `T.cristal` (índice 38) está desenhado no atlas e **nunca foi usado em mapa**.
-  O capítulo 10 é o destino dele.
-- A Sombra vira companheira: sprite (índice 14) e falas já existem.
-- O save **não precisa subir para `_v3`** — a estrutura não muda, só entram mais
-  ids em `done`.
-- Não existe `AVENTURAS` no código. Agrupar os capítulos em duas aventuras
-  separadas no menu é trabalho novo; hoje `montarMenu()` só itera `CAPS`.
+| # | Capítulo | Cenário | Metas |
+|---|---|---|---|
+| 6 | Porto das Letras | areia, píer, água | `palavra` ×3 (3, 4 e 6 letras) |
+| 7 | Feira dos Números | vila, bancas | `numero` ×2 + `escolha` do troco |
+| 8 | Caverna dos Ecos | montanha, `escuro:true` | `sequencia` ×2 + `palavra` |
+| 9 | Jardim da Vovó | grama, flor | `deslizante` + `pegar` + `escolha` |
+| 10 | Torre do Relógio | castelo, `T.cristal` | `numero` ×3 (o último com n:4) |
+
+Decisões desta leva, para não refazer discussão:
+
+- Os ids da 2ª aventura são `mapa-6` … `mapa-10` (os da 1ª são `aurora-N`).
+- `T.cristal` (índice 38) estava desenhado no atlas e **nunca tinha sido usado**.
+  O relógio do capítulo 10 é o destino dele.
+- O save **não subiu para `_v3`** — a estrutura não mudou, só entraram mais ids
+  em `done`. Quem já zerou os 5 primeiros continua com eles marcados.
+- **Não existe `AVENTURAS` no código.** `montarMenu()` só itera `CAPS`; a divisão em
+  duas aventuras é uma faixa visual (`.avSep`) inserida antes dos capítulos 1 e 6.
+  Agrupar de verdade continua sendo trabalho novo.
+- O capítulo 10 não tem `entrega`: a última meta conclui o capítulo direto.
 
 **Não feito** (nada disso foi pedido — não faça sem o Cyr pedir):
 
 - Trilha sonora; hoje só há efeitos sintetizados por Web Audio, sem arquivos
 - Service worker / PWA offline real (hoje o Safari só guarda em cache)
-- Mais aventuras além de "As Quatro Cores" — a estrutura `AVENTURAS` já suporta
+- Uma 3ª aventura (capítulos 11+) — cabe no mesmo padrão: objeto novo em `CAPS`
 - Repositório privado (exigiria GitHub Pro para manter o Pages funcionando)
 
 ---

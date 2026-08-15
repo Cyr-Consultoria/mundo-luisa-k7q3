@@ -292,7 +292,310 @@ const RPG = (() => {
       ['LUÍSA','Vem. Vamos ter cor juntas.']]
   };
 
-  const CAPS = [CAP1,CAP2,CAP3,CAP4,CAP5];
+  /* ==================================================================
+     2ª AVENTURA — "Luísa e o Mapa que Faltava" (capítulos 6 a 10)
+     Aurora recuperou as cores, mas está perdendo os nomes e as contas.
+     A Sombra, agora companheira, vem junto.
+     ================================================================== */
+
+  const CAP6 = {
+    id:'mapa-6', n:6, titulo:'Porto das Letras', subtitulo:'Capítulo 6 · o nome do farol',
+    emoji:'🔤', cor:'#FF8A5B',
+    resumo:'O farol perdeu o nome. Sem nome, os barcos não sabem que ali é casa.',
+    objetivo:'Devolva as palavras que o mar levou',
+    mapa:[
+      'TTTTTTTTTTTTTTTTTTTT',
+      'T~~~~~~~~~~~~~~~~~~T',
+      'T~~~~~~~~bb~~~~~~~~T',
+      'T~~~r~~~~bb~~~r~~~~T',
+      'T~~~~~~~~bb~~~~~~~~T',
+      'TssssssssbbssssssssT',
+      'TsssssssssssssssssrT',
+      'Tsss123ssssssssssssT',
+      'TsssPJPssssssssssssT',
+      'TsssPDPssssssssssssT',
+      'TssssssssssssssssssT',
+      'TsssssrssssssssssssT',
+      'TssssssssssssssssssT',
+      'T,,,,,,,,,,,,,,,,,,T',
+      'T..................T',
+      'TTTTTTTTTTTTTTTTTTTT'
+    ],
+    inicio:{x:9,y:14}, entrega:{x:5,y:9},
+    entregaTxt:'Leve o nome de volta pra porta do farol',
+    metas:[
+      {id:'mar', nome:'a palavra do mar', icone:'🌊', x:9,y:4, tile:T.brilho, acao:'palavra',
+       cfg:{nivel:3}, dica:'Vá até a ponta do píer, lá em cima, e aperte A.',
+       antes:'Tem uma palavra boiando aqui. Falta juntar as letras.',
+       fala:'Essa eu devolvi pro mar.'},
+      {id:'areia', nome:'a palavra da areia', icone:'🐚', x:15,y:11, tile:T.brilho, acao:'palavra',
+       cfg:{nivel:4}, dica:'Está na areia, à direita de onde você começou.',
+       antes:'Alguém escreveu na areia e a onda embaralhou.',
+       fala:'Consertei antes da próxima onda.'},
+      {id:'nome', nome:'o nome do farol', icone:'💡', x:5,y:10, tile:T.estrela, acao:'palavra',
+       cfg:{nivel:6}, exigeTudo:true,
+       dica:'Fique na frente da porta do farol e aperte A.',
+       antes:'Agora o nome dele. Esse é o mais comprido.',
+       fala:'O farol tem nome de novo!'}
+    ],
+    npcs:[
+      {id:'mel',sprite:CH.mel,x:12,y:12,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau. Areia entra na pata.','O farol apagou porque esqueceram como ele chama.'],
+        meio:['Você tá juntando letra que nem quem junta concha.'],
+        fim:['Acendeu. Miau. Dá pra ver de longe.']}},
+      {id:'sombra',sprite:CH.sombra,x:7,y:13,nome:'SOMBRA',cor:'#D06B8C',falas:{
+        inicio:['Eu vim junto. Você deixou.','Sem nome, a gente some. Eu sei disso melhor que ninguém.'],
+        meio:['Continua. Eu seguro a lanterna.'],
+        fim:['Você devolveu o nome dele. Igual fez com o meu.']}}
+    ],
+    abertura:[['LUÍSA','O farol está apagado.'],
+      ['LUÍSA','A placa do nome caiu na água e as letras se soltaram.'],
+      ['LUÍSA','Sem nome, os barcos não sabem que aqui é casa.']],
+    final:[['LUÍSA','Pronto. Farol com nome, farol aceso.'],
+      ['SOMBRA','Nome é o que faz a gente existir de longe.','#D06B8C'],
+      ['LUÍSA','Então vamos devolver todos os que sumiram.']]
+  };
+
+  const CAP7 = {
+    id:'mapa-7', n:7, titulo:'Feira dos Números', subtitulo:'Capítulo 7 · ninguém sabe quanto',
+    emoji:'🔢', cor:'#4FA8E8',
+    resumo:'A feira abriu, mas ninguém sabe contar. Nem quanto tem, nem quanto falta.',
+    objetivo:'Faça as contas que a feira perdeu',
+    mapa:[
+      'TTTTTTTTTTTTTTTTTTTT',
+      'T..................T',
+      'T.123....123....123T',
+      'T.PDP....PDP....PDPT',
+      'T..................T',
+      'T.================.T',
+      'T..................T',
+      'T....a......a......T',
+      'T..................T',
+      'T.================.T',
+      'T..................T',
+      'T.123....123....123T',
+      'T.PDP....PDP....PDPT',
+      'T..................T',
+      'T..f....f....f....fT',
+      'TTTTTTTTTTTTTTTTTTTT'
+    ],
+    inicio:{x:9,y:13}, entrega:{x:9,y:7},
+    entregaTxt:'Volte pro meio da praça e conte pra todo mundo',
+    metas:[
+      {id:'banca1', nome:'a banca das frutas', icone:'🍎', x:3,y:4, tile:T.brilho, acao:'numero',
+       cfg:{nivel:1,n:3}, dica:'Primeira banca de cima, à esquerda.',
+       antes:'O moço não sabe quantas frutas ele tem. Vou contar com ele.',
+       fala:'Agora ele sabe quantas são.'},
+      {id:'banca2', nome:'a banca do pão', icone:'🍞', x:16,y:10, tile:T.brilho, acao:'numero',
+       cfg:{nivel:2,n:3}, dica:'Banca de baixo, bem à direita.',
+       antes:'Aqui precisa somar duas cestas.',
+       fala:'Somei as duas cestas.'},
+      {id:'troco', nome:'o troco justo', icone:'🪙', x:9,y:10, tile:T.estrela, acao:'escolha',
+       exigeTudo:true,
+       cfg:{ titulo:'🪙 A feirante pergunta', pergunta:'"Sobrou uma moeda. Fico com ela ou devolvo?"',
+         a:{ rotulo:'Devolve', falas:[['FEIRANTE','Sobrou uma moeda. Fico com ela?','#8FE3FF'],
+             ['LUÍSA','Devolve.'],['LUÍSA','Ela não é sua, mesmo que ninguém veja.'],
+             ['FEIRANTE','…então a conta fecha de verdade.','#8FE3FF']] },
+         b:{ rotulo:'Pergunta de quem é', falas:[['FEIRANTE','Sobrou uma moeda. Fico com ela?','#8FE3FF'],
+             ['LUÍSA','Pergunta primeiro de quem é.'],['LUÍSA','Talvez alguém esteja procurando.'],
+             ['FEIRANTE','…então a conta fecha de verdade.','#8FE3FF']] } },
+       dica:'A feirante está no meio da praça, embaixo.',
+       fala:'A conta fechou certa.'}
+    ],
+    npcs:[
+      {id:'tobias',sprite:CH.tobias,x:6,y:6,nome:'TOBIAS',cor:'#7BD97B',falas:{
+        inicio:['Luísa! Ninguém consegue dar troco.','Eu tentei contar nos dedos. Acabaram os dedos.'],
+        meio:['Você conta rápido demais.'],
+        fim:['A feira inteira voltou a funcionar!']}},
+      {id:'mel',sprite:CH.mel,x:13,y:8,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau. Aqui cheira a peixe e eu aprovo.','Contar é fácil: um peixe, outro peixe.'],
+        meio:['Dois peixes já é muito peixe.'],
+        fim:['Miau. Que ninguém conte os meus.']}}
+    ],
+    abertura:[['LUÍSA','A feira abriu, mas parou.'],
+      ['LUÍSA','Ninguém sabe quanto tem, nem quanto falta, nem quanto devolver.'],
+      ['LUÍSA','Números também são nomes — nome de quantidade.']],
+    final:[['LUÍSA','A feira voltou a contar.'],
+      ['TOBIAS','E o troco saiu certinho!','#7BD97B'],
+      ['LUÍSA','Falta a caverna. Dizem que lá o eco guarda o que a gente esquece.']]
+  };
+
+  const CAP8 = {
+    id:'mapa-8', n:8, titulo:'Caverna dos Ecos', subtitulo:'Capítulo 8 · o que ficou guardado',
+    emoji:'🕯️', cor:'#9B7BD9', escuro:true,
+    resumo:'A caverna repete tudo o que já foi dito. Inclusive o que Aurora esqueceu.',
+    objetivo:'Acenda os 2 ecos e diga a palavra guardada',
+    mapa:[
+      'RRRRRRRRRRRRRRRRRRRR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmRRRRmmmmmRRRRmmmR',
+      'RmmRRRRmmmmmRRRRmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmmmmRRRRRRRRmmmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RRRRRRmmmmmmmmRRRRRR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmmmRRRRmmRRRRmmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmmRRRRRRRRRRRRmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RmmmmmmmmmmmmmmmmmmR',
+      'RRRRRRRRRRRRRRRRRRRR'
+    ],
+    inicio:{x:9,y:14}, entrega:{x:9,y:1},
+    entregaTxt:'Suba até o fundo da caverna, lá em cima',
+    metas:[
+      {id:'eco1', nome:'1º eco', icone:'🕯️', x:3,y:4, tile:T.vagOff, tileOn:T.vagOn, acao:'sequencia',
+       cfg:{n:3}, dica:'À esquerda, depois da primeira passagem estreita.',
+       antes:'O eco pisca antes de repetir. Vou prestar atenção.',
+       fala:'Primeiro eco aceso.'},
+      {id:'eco2', nome:'2º eco', icone:'🕯️', x:16,y:10, tile:T.vagOff, tileOn:T.vagOn, acao:'sequencia',
+       cfg:{n:4}, dica:'Lá embaixo à direita, passando pelo corredor do meio.',
+       antes:'Esse repete mais coisa. Calma.',
+       fala:'Segundo eco aceso.'},
+      {id:'guardada', nome:'a palavra guardada', icone:'📢', x:9,y:8, tile:T.estrela, acao:'palavra',
+       cfg:{nivel:6}, exigeTudo:true,
+       dica:'No meio da caverna, entre os dois corredores.',
+       antes:'Com os dois ecos acesos dá pra ouvir o que ficou guardado aqui.',
+       fala:'A caverna disse de volta!'}
+    ],
+    npcs:[
+      {id:'sombra',sprite:CH.sombra,x:12,y:13,nome:'SOMBRA',cor:'#D06B8C',falas:{
+        inicio:['Escuro de novo. Você já passou por isso.','Dessa vez eu vim de propósito.'],
+        meio:['O eco não inventa. Só devolve.'],
+        fim:['Guardar não é esconder. É esperar alguém voltar buscar.']}}
+    ],
+    abertura:[['LUÍSA','Escuro. Mas eu já sei andar no escuro.'],
+      ['LUÍSA','Essa caverna repete tudo o que já foi dito aqui dentro.'],
+      ['LUÍSA','Então ela guardou o que Aurora esqueceu.']],
+    final:[['LUÍSA','A caverna devolveu a palavra.'],
+      ['SOMBRA','Ela estava aqui esse tempo todo. Só faltava quem viesse buscar.','#D06B8C'],
+      ['LUÍSA','Falta um lugar. E esse eu conheço de cor.']]
+  };
+
+  const CAP9 = {
+    id:'mapa-9', n:9, titulo:'Jardim da Vovó', subtitulo:'Capítulo 9 · o que não se esquece',
+    emoji:'🌻', cor:'#F0B45A',
+    resumo:'O jardim não perdeu nada. A vovó lembra de tudo — e é ela que ensina a lembrar.',
+    objetivo:'Ajude a vovó a guardar as lembranças',
+    mapa:[
+      'TTTTTTTTTTTTTTTTTTTT',
+      'T....ffff....ffff..T',
+      'T..................T',
+      'T.a....123....a....T',
+      'T......PJP.........T',
+      'T......PDP.........T',
+      'T..................T',
+      'T..===========.....T',
+      'T..................T',
+      'T.ff....a....ff....T',
+      'T..................T',
+      'T....a........a....T',
+      'T..................T',
+      'T.f..f..f..f..f..f.T',
+      'T..................T',
+      'TTTTTTTTTTTTTTTTTTTT'
+    ],
+    inicio:{x:9,y:14}, entrega:{x:8,y:5},
+    entregaTxt:'Entre na casa da vovó',
+    metas:[
+      {id:'retrato', nome:'o retrato', icone:'🖼️', x:5,y:9, tile:T.estrela, acao:'deslizante',
+       dica:'Perto das flores do meio, à esquerda.',
+       antes:'O retrato caiu e se partiu. Vou montar de novo.',
+       fala:'O retrato voltou inteiro.'},
+      {id:'semente', nome:'a semente', icone:'🌱', x:9,y:7, tile:T.flor, acao:'pegar',
+       dica:'No caminho de terra, no meio do jardim.',
+       fala:'Uma semente. A vovó vai saber o que é.'},
+      {id:'lembranca', nome:'a lembrança', icone:'💛', x:12,y:11, tile:T.brilho, acao:'escolha',
+       exigeTudo:true,
+       cfg:{ titulo:'💛 A vovó pergunta', pergunta:'"O que você quer guardar pra nunca esquecer?"',
+         a:{ rotulo:'Um dia bom', falas:[['VOVÓ','O que você quer guardar pra nunca esquecer?','#FFD84D'],
+             ['LUÍSA','Um dia bom.'],['LUÍSA','Pra lembrar que existe e vem de novo.'],
+             ['VOVÓ','…então planta aqui. Lembrança boa dá flor.','#FFD84D']] },
+         b:{ rotulo:'Um dia difícil', falas:[['VOVÓ','O que você quer guardar pra nunca esquecer?','#FFD84D'],
+             ['LUÍSA','Um dia difícil.'],['LUÍSA','Pra lembrar que eu passei por ele.'],
+             ['VOVÓ','…então planta aqui. Lembrança boa dá flor.','#FFD84D']] } },
+       dica:'A vovó está perto do arbusto da direita, embaixo.',
+       fala:'Guardei.'}
+    ],
+    npcs:[
+      {id:'vovo',sprite:CH.vovo,x:6,y:6,nome:'VOVÓ',cor:'#FFD84D',falas:{
+        inicio:['Você cresceu, menina.','Aqui não sumiu nada. Jardim guarda sozinho.'],
+        meio:['Lembrar é regar. Todo dia um pouquinho.'],
+        fim:['Leva a semente. Planta onde você for.']}},
+      {id:'mel',sprite:CH.mel,x:14,y:13,nome:'MEL',cor:'#F0B45A',falas:{
+        inicio:['Miau. Aqui é quentinho.','Eu durmo nesse canteiro desde sempre.'],
+        meio:['Não pisa na minha flor.'],
+        fim:['Miau. Volta sempre.']}}
+    ],
+    abertura:[['LUÍSA','O jardim da vovó.'],
+      ['LUÍSA','Aqui não sumiu nome nenhum. Nem conta nenhuma.'],
+      ['LUÍSA','Ela lembra de tudo. Eu vim aprender como.']],
+    final:[['VOVÓ','Pronto. Guardado.','#FFD84D'],
+      ['LUÍSA','E agora, vó?'],
+      ['VOVÓ','Agora a torre. O relógio dela parou, e sem hora ninguém combina nada.','#FFD84D']]
+  };
+
+  const CAP10 = {
+    id:'mapa-10', n:10, titulo:'Torre do Relógio', subtitulo:'Capítulo 10 · a hora de Aurora',
+    emoji:'🕰️', cor:'#C77DFF',
+    resumo:'O relógio da torre parou. Sem hora, ninguém combina de se encontrar.',
+    objetivo:'Conserte as engrenagens e acerte a hora',
+    mapa:[
+      'WWWWWWWWWWWWWWWWWWWW',
+      'WccccccccccccccccccW',
+      'WcXccccccccccccccXcW',
+      'WccccccccccccccccccW',
+      'WWWWWccccccccccWWWWW',
+      'WccccccccccccccccccW',
+      'WcXccccccccccccccXcW',
+      'WccccccccccccccccccW',
+      'WWWWccccccccccccWWWW',
+      'WccccccccccccccccccW',
+      'WccccccccccccccccccW',
+      'WcXccccccccccccccXcW',
+      'WccccccccccccccccccW',
+      'WWWWWWWWcccWWWWWWWWW',
+      'WccccccccccccccccccW',
+      'WWWWWWWWWWWWWWWWWWWW'
+    ],
+    inicio:{x:9,y:14},
+    metas:[
+      {id:'eng1', nome:'a 1ª engrenagem', icone:'⚙️', x:4,y:5, tile:T.brilho, acao:'numero',
+       cfg:{nivel:2,n:3}, dica:'Suba pela passagem do meio e vá para a esquerda.',
+       antes:'Cada engrenagem só encaixa se a conta bater.',
+       fala:'Primeira engrenagem girando.'},
+      {id:'eng2', nome:'a 2ª engrenagem', icone:'⚙️', x:15,y:9, tile:T.brilho, acao:'numero',
+       cfg:{nivel:3,n:3}, dica:'No andar do meio, bem à direita.',
+       antes:'Essa é maior. As contas também.',
+       fala:'Segunda engrenagem girando.'},
+      {id:'relogio', nome:'acertar a hora', icone:'🕰️', x:9,y:2, tile:T.cristal, acao:'numero',
+       cfg:{nivel:3,n:4}, exigeTudo:true,
+       dica:'Lá em cima, no cristal do relógio. Acerte a hora de Aurora.',
+       antes:'Agora a hora. Se eu errar, eu conto de novo — ninguém me apaga por isso.',
+       fala:'O relógio voltou a andar!'}
+    ],
+    npcs:[
+      {id:'sombra',sprite:CH.sombra,x:12,y:14,nome:'SOMBRA',cor:'#D06B8C',falas:{
+        inicio:['A torre é alta.','Eu subo com você. Não na sua frente, nem atrás. Do lado.'],
+        meio:['Você errou uma conta e continuou. Isso é o mais difícil.'],
+        fim:['Tá na hora. Literalmente.']}},
+      {id:'tobias',sprite:CH.tobias,x:6,y:14,nome:'TOBIAS',cor:'#7BD97B',falas:{
+        inicio:['Todo mundo tá esperando lá embaixo.','Sem hora ninguém sabe quando chega.'],
+        meio:['Falta pouco, Luísa!'],
+        fim:['Ouviu? O sino da torre!']}}
+    ],
+    abertura:[['LUÍSA','O relógio da torre parou.'],
+      ['LUÍSA','Sem hora, ninguém combina de se encontrar.'],
+      ['LUÍSA','E o que Aurora mais perdeu foi gente se encontrando.']],
+    final:[['LUÍSA','Tique. Taque. Voltou.'],
+      ['SOMBRA','Nome, conta e hora. Era isso que faltava no mapa.','#D06B8C'],
+      ['LUÍSA','O mapa não faltava. Faltava alguém andar nele.'],
+      ['LUÍSA','E fui eu.']]
+  };
+
+  const CAPS = [CAP1,CAP2,CAP3,CAP4,CAP5,CAP6,CAP7,CAP8,CAP9,CAP10];
 
   /* ================== ESTADO ================== */
   let cv,ctx,cap,cam={x:0,y:0},raf=null,rodando=false;
@@ -566,21 +869,160 @@ const RPG = (() => {
     mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
   }
 
+  /* Pergunta de duas respostas, ambas válidas. Sem cfg, cai no Reflexo do capítulo 3
+     — era texto fixo aqui dentro, e por isso o `escolha` só servia naquele capítulo. */
+  const ESCOLHA_REFLEXO = {
+    titulo:'🪞 O Reflexo pergunta', pergunta:'"Você tem certeza que consegue?"',
+    a:{ rotulo:'Não tenho', falas:[['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Não tenho.'],
+        ['LUÍSA','Mas eu vou tentar do mesmo jeito.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']] },
+    b:{ rotulo:'Tenho', falas:[['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Tenho.'],
+        ['LUÍSA','E se eu não conseguir, eu tento outra vez.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']] }
+  };
   function jogoEscolha(meta,cb){
-    abrirMini('<div class="miniBox"><div class="miniT">🪞 O Reflexo pergunta</div>'+
-      '<div class="miniSub">"Você tem certeza que consegue?"</div>'+
-      '<div class="miniAcoes col"><button class="btn pri" data-r="0">Não tenho</button>'+
-      '<button class="btn pri" data-r="1">Tenho</button></div>'+
+    const c = (meta.cfg && meta.cfg.pergunta) ? meta.cfg : ESCOLHA_REFLEXO;
+    abrirMini('<div class="miniBox"><div class="miniT">'+c.titulo+'</div>'+
+      '<div class="miniSub">'+c.pergunta+'</div>'+
+      '<div class="miniAcoes col"><button class="btn pri" data-r="0">'+c.a.rotulo+'</button>'+
+      '<button class="btn pri" data-r="1">'+c.b.rotulo+'</button></div>'+
       '<p class="miniNota">As duas respostas estão certas.</p></div>');
     mini().querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',()=>{
       const r=+b.dataset.r; fecharMini(); sOk();
-      falar(r===0
-        ? [['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Não tenho.'],
-           ['LUÍSA','Mas eu vou tentar do mesmo jeito.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']]
-        : [['REFLEXO','Você tem certeza que consegue?','#8FE3FF'],['LUÍSA','Tenho.'],
-           ['LUÍSA','E se eu não conseguir, eu tento outra vez.'],['REFLEXO','…então você já sabe o que precisa saber.','#8FE3FF']],
-        ()=>cb(true));
+      falar((r===0?c.a:c.b).falas, ()=>cb(true));
     }));
+  }
+
+  /* Monta a Palavra dentro do capítulo. Reusa PAL_BANCO e PAL_EXTRAS dos jogos
+     do menu — mesma lista, mesma regra de pista. Sair nunca pune: volta ao mapa. */
+  function jogoPalavra(meta,cb){
+    const nivel = (meta.cfg&&meta.cfg.nivel) || 4;
+    const [palavra, emoji, ehFoto] = PAL_BANCO[nivel][Math.floor(Math.random()*PAL_BANCO[nivel].length)];
+    const extras = D().baloes ? (nivel===3?0:nivel===4?2:3) : (nivel===3?2:nivel===4?3:4);
+    const letras = palavra.split('');
+    const pool = PAL_EXTRAS.split('').filter(l=>!palavra.includes(l));
+    for(let i=0;i<extras;i++) letras.push(pool[Math.floor(Math.random()*pool.length)]);
+
+    const pista = ehFoto
+      ? '<div class="palPista foto" style="width:84px;height:84px;margin-bottom:8px;background-image:url(\''+IMGS[Math.floor(Math.random()*IMGS.length)]+'\')"></div>'
+      : '<div style="font-size:44px;line-height:1;margin-bottom:6px">'+emoji+'</div>';
+
+    abrirMini('<div class="miniBox"><div class="miniT">🔤 '+(meta.nome||'Monte a palavra')+'</div>'+
+      '<div class="miniSub" id="mSub">Toque nas letras na ordem certa</div>'+ pista +
+      '<div class="palSlots" id="mSlots"></div><div class="palBanco" id="mBanco"></div>'+
+      '<div class="miniAcoes"><button class="btn" id="mDica">💡 Dica</button>'+
+      '<button class="btn" id="mSair">✖ Sair</button></div></div>');
+
+    const slotsEl=mini().querySelector('#mSlots'), bancoEl=mini().querySelector('#mBanco'),
+          sub=mini().querySelector('#mSub');
+    let postas = Array(palavra.length).fill(null);
+
+    function pinta(){
+      slotsEl.className='palSlots'; slotsEl.innerHTML='';
+      postas.forEach((it,i)=>{
+        const d=document.createElement('div');
+        d.className='palSlot'+(it?' cheio':'')+(it&&it.travado?' travado':'');
+        d.textContent = it?it.letra:'';
+        if(it&&!it.travado) d.addEventListener('click',()=>{ it.botao.classList.remove('usada');
+          postas[i]=null; beep(420,.07); pinta(); });
+        slotsEl.appendChild(d);
+      });
+    }
+    shuffle(letras).forEach((l,i)=>{
+      const b=document.createElement('button');
+      b.className='palLetra'; b.textContent=l; b.style.setProperty('--i',i);
+      b.addEventListener('click',()=>{
+        if(b.classList.contains('usada')) return;
+        const vaga=postas.indexOf(null); if(vaga<0) return;
+        postas[vaga]={letra:l,botao:b}; b.classList.add('usada'); sFlip(); pinta();
+        if(!postas.includes(null)) setTimeout(conferir,260);
+      });
+      bancoEl.appendChild(b);
+    });
+    pinta();
+
+    function conferir(){
+      if(postas.map(s=>s.letra).join('')===palavra){
+        slotsEl.classList.add('ok'); sub.textContent='Isso! 🎉'; sOk(); confete(40);
+        setTimeout(()=>{fecharMini(); cb(true);},800);
+      } else {
+        slotsEl.classList.add('erro'); sNo(); sub.textContent='Quase! Olha a figura de novo…';
+        setTimeout(()=>{
+          postas.forEach((it,i)=>{ if(it&&!it.travado){ it.botao.classList.remove('usada'); postas[i]=null; } });
+          pinta(); sub.textContent='Toque nas letras na ordem certa';
+        },520);
+      }
+    }
+    /* A dica trava a próxima letra certa. Sem limite: ela nunca fica presa aqui. */
+    mini().querySelector('#mDica').addEventListener('click',()=>{
+      const i=postas.findIndex((s,k)=>!s||s.letra!==palavra[k]);
+      if(i<0) return;
+      if(postas[i]){ postas[i].botao.classList.remove('usada'); postas[i]=null; }
+      const botao=[...bancoEl.querySelectorAll('.palLetra')]
+        .find(b=>b.textContent===palavra[i] && !b.classList.contains('usada'));
+      if(!botao) return;
+      botao.classList.add('usada'); postas[i]={letra:palavra[i],botao,travado:true};
+      beep(880,.09); pinta();
+      if(!postas.includes(null)) setTimeout(conferir,260);
+    });
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
+  }
+
+  /* Conta com a Luísa dentro do capítulo: n contas certas seguidas concluem a meta.
+     Errar não tira a opção certa nem zera o progresso. */
+  function jogoNumero(meta,cb){
+    const nivel=(meta.cfg&&meta.cfg.nivel)||1;
+    const alvo=(meta.cfg&&meta.cfg.n||3)+D().extra;
+    let feitas=0, resp=0, erros=0;
+
+    abrirMini('<div class="miniBox"><div class="miniT">🔢 '+(meta.nome||'Faça a conta')+'</div>'+
+      '<div class="miniSub" id="mSub">Acerte '+alvo+' contas</div>'+
+      '<div class="numPergunta" id="mPerg"></div><div class="numApoio" id="mApoio"></div>'+
+      '<div class="numOpcoes" id="mOpc"></div>'+
+      '<div class="miniAcoes"><button class="btn" id="mSair">✖ Sair</button></div></div>');
+
+    const perg=mini().querySelector('#mPerg'), apoio=mini().querySelector('#mApoio'),
+          opc=mini().querySelector('#mOpc'), sub=mini().querySelector('#mSub');
+
+    function nova(){
+      erros=0; apoio.className='numApoio';
+      const obj=NUM_OBJ[Math.floor(Math.random()*NUM_OBJ.length)];
+      if(nivel===1){
+        const n=rnd(1,10); resp=n; perg.textContent='Quantos?'; apoio.innerHTML=grupo(n,obj);
+      } else if(nivel===2){
+        const a=rnd(1,6), b=rnd(1,10-a); resp=a+b; perg.textContent=a+' + '+b;
+        apoio.innerHTML=grupo(a,obj)+'<span class="sinal">+</span>'+grupo(b,obj);
+      } else if(Math.random()<.5){
+        const a=rnd(3,14), b=rnd(2,Math.min(6,20-a)); resp=a+b; perg.textContent=a+' + '+b;
+        apoio.innerHTML=quadroDez(a)+'<span class="sinal">+</span>'+quadroDez(b);
+      } else {
+        const a=rnd(6,20), b=rnd(2,Math.min(9,a-1)); resp=a-b; perg.textContent=a+' − '+b;
+        apoio.innerHTML=quadroDez(a,b);
+      }
+      const set=new Set([resp]);
+      while(set.size<6){ const d=resp+rnd(-4,4); if(d>=0&&d!==resp) set.add(d); }
+      opc.innerHTML='';
+      shuffle([...set]).forEach((v,i)=>{
+        const b=document.createElement('button');
+        b.className='numOpc'; b.textContent=v; b.style.setProperty('--i',i);
+        b.addEventListener('click',()=>responder(b,v));
+        opc.appendChild(b);
+      });
+      sub.textContent='Acertou '+feitas+' de '+alvo;
+    }
+    function responder(botao,valor){
+      if(valor===resp){
+        botao.classList.add('certa');
+        opc.querySelectorAll('.numOpc').forEach(b=>b.style.pointerEvents='none');
+        feitas++; sOk(); confete(30);
+        if(feitas>=alvo){ sub.textContent='Todas certas! 🎉'; sWin();
+          setTimeout(()=>{fecharMini(); cb(true);},800); }
+        else setTimeout(nova,700);
+      } else {
+        botao.classList.add('errada'); sNo(); erros++;
+        if(erros>=2){ apoio.classList.remove('pisca'); void apoio.offsetWidth; apoio.classList.add('pisca'); }
+      }
+    }
+    nova();
+    mini().querySelector('#mSair').addEventListener('click',()=>{ fecharMini(); cb(false); });
   }
 
   const CORES4=[{c:'#FFD84D',n:'Alegria',f:523},{c:'#7BD97B',n:'Vida',f:659},
@@ -658,6 +1100,8 @@ const RPG = (() => {
       if(m.acao==='musical')    return jogoMusical(m,seguir);
       if(m.acao==='deslizante') return jogoDeslizante(m,seguir);
       if(m.acao==='escolha')    return jogoEscolha(m,seguir);
+      if(m.acao==='palavra')    return jogoPalavra(m,seguir);
+      if(m.acao==='numero')     return jogoNumero(m,seguir);
       if(m.acao==='final')      return jogoFinal(m,seguir);
     };
     if(m.antes && m.acao!=='pegar') falar([['LUÍSA',m.antes]],roda); else roda();
@@ -853,6 +1297,15 @@ const RPG = (() => {
   function montarMenu(){
     const box=document.getElementById('rpgMenu'); box.innerHTML='';
     CAPS.forEach((c,i)=>{
+      /* Duas aventuras na mesma lista: o capítulo 5 fecha As Quatro Cores.
+         Não existe estrutura AVENTURAS no motor — isto é só a marca visual. */
+      if(c.n===1 || c.n===6){
+        const s=document.createElement('div');
+        s.className='avSep'; s.style.setProperty('--i',i);
+        s.innerHTML='<b>'+(c.n===1?'🌈 As Quatro Cores':'🗺️ O Mapa que Faltava')+'</b>'+
+          '<span>'+(c.n===1?'Capítulos 1 a 5':'Capítulos 6 a 10')+'</span>';
+        box.appendChild(s);
+      }
       const livre=desbloqueado(i), feito=capConcluido(c.id);
       const b=document.createElement(livre?'button':'div');
       b.className='avCard'+(livre?'':' breve'); b.style.setProperty('--i',i);
@@ -941,7 +1394,8 @@ const RPG = (() => {
 
   return { boot, abrir, fechar, voltarMenu, reiniciar:reiniciarCap, dica:pedirDica, arrumar:arrumarCaixote,
     _dbg:()=>({x:jog.x/TS,y:jog.y/TS,dir:jog.dir,cap:cap&&cap.id,dif,cx:caixote.x,cy:caixote.y,
-      feitos:[...feitos],fim:entregue,dial:!!dial,mini:miniAberto,sat:saturacao}),
+      feitos:[...feitos],fim:entregue,dial:!!dial,mini:miniAberto,sat:saturacao,
+      inicio:cap&&cap.inicio,entrega:cap&&cap.entrega}),
     _tp:(x,y,d)=>{ jog.x=x*TS; jog.y=y*TS; if(d)jog.dir=d;
       cam.x=Math.max(0,Math.min(cap.mapa[0].length*TS-VW,jog.x+8-VW/2));
       cam.y=Math.max(0,Math.min(cap.mapa.length*TS-VH,jog.y+8-VH/2)); },

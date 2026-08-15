@@ -124,11 +124,12 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   await p.click('#btnBack');
   await p.waitForTimeout(400);
 
-  // ---------- 3. RPG: os 5 capítulos concluem ----------
-  console.log('\n3) Aventura — 5 capítulos de ponta a ponta');
+  // ---------- 3. RPG: os 10 capítulos concluem ----------
+  console.log('\n3) Aventura — 10 capítulos de ponta a ponta');
   await p.click('[data-go="vRpg"]');
   await p.waitForTimeout(500);
   checa(await p.locator('#vRpg.on').isVisible(), 'menu da Aventura abre');
+  checa(await p.locator('#rpgMenu .avSep').count() === 2, 'as 2 aventuras aparecem separadas no menu');
 
   // RPG é const de escopo de script: existe como identificador, não em window.
   const ganchos = await p.evaluate(() => {
@@ -138,7 +139,70 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   });
   checa(ganchos, 'ganchos de debug do RPG disponíveis');
 
-  for (let i = 0; i < 5; i++) {
+  // ---------- 3b. As ações novas abrem de verdade ----------
+  console.log('\n3b) Ações palavra e numero abrem o mini-jogo');
+  for (const [capIdx, acao, rotulo] of [[5, 'palavra', 'cap 6 · palavra'],
+                                        [6, 'numero',  'cap 7 · numero']]) {
+    const r = await p.evaluate(async ({ i, a }) => {
+      RPG._cap(i);
+      await new Promise(r => setTimeout(r, 400));
+      const meta = RPG._metas().find(m => m.acao === a);
+      if (!meta) return { erro: 'meta não existe' };
+      RPG._tp(meta.x, meta.y);
+      await new Promise(r => setTimeout(r, 200));
+      // metas com `antes:` abrem diálogo primeiro; o A avança até o mini-jogo
+      for (let k = 0; k < 10 && !document.querySelector('#rpgMini.on'); k++) {
+        RPG._a();
+        await new Promise(r => setTimeout(r, 260));
+      }
+      const box = document.querySelector('#rpgMini.on .miniBox');
+      const alvos = a === 'palavra'
+        ? document.querySelectorAll('#rpgMini .palLetra').length
+        : document.querySelectorAll('#rpgMini .numOpc').length;
+      const sair = document.querySelector('#rpgMini #mSair');
+      if (sair) sair.click();
+      await new Promise(r => setTimeout(r, 300));
+      return { abriu: !!box, alvos, fechou: !document.querySelector('#rpgMini.on') };
+    }, { i: capIdx, a: acao });
+    checa(r.abriu && r.alvos > 0 && r.fechou,
+          `${rotulo}: abre com ${r.alvos} alvos e o Sair fecha`, JSON.stringify(r));
+  }
+
+  // ---------- 3c. Dá para CHEGAR em tudo? ----------
+  // _feito conclui a meta sem andar pelo mapa. Sem isto, um alvo murado passa batido
+  // e a criança fica presa — que é a única falha que o app não pode ter.
+  console.log('\n3c) Alcance real dos capítulos novos (BFS pelo mapa)');
+  for (let i = 5; i < 10; i++) {
+    const r = await p.evaluate(async (idx) => {
+      RPG._cap(idx);
+      await new Promise(r => setTimeout(r, 350));
+      const mapa = RPG._mapa();
+      const d = RPG._dbg();
+      const SOL = new Set('T~PJ#123FBrRWOX'.split(''));
+      const H = mapa.length, W = mapa[0].length;
+      const livre = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !SOL.has(mapa[y][x]);
+      // _dbg().x já vem em tiles (jog.x/TS) — dividir de novo por 16 põe o BFS em (1,1)
+      const ini = d.inicio || { x: Math.round(d.x), y: Math.round(d.y) };
+      const vistos = new Set([ini.x + ',' + ini.y]);
+      const fila = [ini];
+      while (fila.length) {
+        const c = fila.shift();
+        for (const [dx, dy] of [[0,1],[0,-1],[1,0],[-1,0]]) {
+          const nx = c.x + dx, ny = c.y + dy, k = nx + ',' + ny;
+          if (!vistos.has(k) && livre(nx, ny)) { vistos.add(k); fila.push({ x: nx, y: ny }); }
+        }
+      }
+      const alvos = RPG._metas().map(m => ({ nome: m.id, x: m.x, y: m.y }));
+      if (d.entrega) alvos.push({ nome: 'ponto de entrega', x: d.entrega.x, y: d.entrega.y });
+      const presos = alvos.filter(a => !vistos.has(a.x + ',' + a.y));
+      return { inicioLivre: livre(ini.x, ini.y), presos: presos.map(a => a.nome), total: alvos.length };
+    }, i);
+    checa(r.inicioLivre && r.presos.length === 0,
+          `capítulo ${i + 1}: os ${r.total} alvos são alcançáveis a pé`,
+          r.inicioLivre ? 'sem caminho até ' + r.presos.join(', ') : 'início em cima de tile sólido');
+  }
+
+  for (let i = 0; i < 10; i++) {
     const r = await p.evaluate(async (idx) => {
       RPG._cap(idx);
       await new Promise(r => setTimeout(r, 350));

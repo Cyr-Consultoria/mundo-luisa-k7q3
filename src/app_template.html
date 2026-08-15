@@ -202,6 +202,12 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 
 /* ---------- RPG ---------- */
 #rpgMenu{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+/* Faixa que separa as duas aventuras; ocupa a linha inteira da grade. */
+.avSep{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  margin:6px 2px 0;padding-bottom:8px;border-bottom:2px solid rgba(120,40,90,.14);
+  animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0)*70ms)}
+.avSep b{font-size:16px;font-weight:900;letter-spacing:-.01em}
+.avSep span{font-size:12px;opacity:.62;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
 .avCard{position:relative;border:0;text-align:left;cursor:pointer;border-radius:24px;padding:16px 14px 14px;
   background:linear-gradient(150deg,#3C2A5E,#1E1533);color:#fff;box-shadow:var(--sombra);
   display:flex;flex-direction:column;gap:3px;min-height:120px;
@@ -215,8 +221,13 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .avCard i{font-size:13px;opacity:.85;font-style:normal;line-height:1.3;margin-top:4px;padding-right:40px}
 
 #rpgJogo{display:none}
-#rpgMini{position:absolute;inset:0;z-index:8;display:none;place-items:center;padding:8px;
-  background:rgba(20,14,32,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* Tela cheia, não dentro da .rpgTela: o viewport do RPG tem só ~230px de altura a
+   375px e cortava o mini-jogo — sumia metade das respostas e o botão Sair junto.
+   position:fixed escapa do overflow:hidden da .rpgTela. */
+#rpgMini{position:fixed;inset:0;z-index:80;display:none;place-items:center;
+  padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+  background:rgba(20,14,32,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  overflow-y:auto}
 #rpgMini.on{display:grid;animation:fadeIn var(--dur-med) var(--ease-out) both}
 .miniBox{width:100%;max-width:440px;text-align:center;color:#fff;
   animation:winIn var(--dur-slow) var(--ease-spring) both}
@@ -364,6 +375,25 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .numOpc.certa{background:linear-gradient(135deg,var(--verde),#3FBE72);color:#fff}
 .numOpc.errada{opacity:.4;pointer-events:none;animation:tremer 420ms var(--ease-out)}
 @media(min-width:700px){ .numOpcoes{max-width:420px} .numOpc{min-height:68px;font-size:30px} }
+
+/* ---------- Palavra e número dentro do RPG ----------
+   Reaproveita as classes dos jogos 5 e 6; só encolhe para caber no viewport
+   do RPG e clareia as bordas, porque o fundo do overlay é escuro. */
+#rpgMini .palSlots,#rpgMini .palBanco{gap:7px;margin-bottom:12px;min-height:0}
+#rpgMini .palSlot{width:46px;height:52px;font-size:25px;border-color:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.14);color:#fff}
+#rpgMini .palSlot.cheio{background:#fff;color:var(--tinta)}
+#rpgMini .palLetra{width:46px;height:50px;min-width:44px;font-size:24px}
+#rpgMini .numPergunta{font-size:clamp(30px,8vw,42px);margin-bottom:8px;
+  -webkit-text-fill-color:#fff;color:#fff;background:none}
+#rpgMini .numApoio{gap:10px;margin-bottom:14px;min-height:0}
+#rpgMini .numApoio .grupo{padding:10px 12px;max-width:170px;gap:4px}
+#rpgMini .numApoio .grupo span{font-size:22px}
+#rpgMini .numApoio .sinal{color:#fff;opacity:.8}
+#rpgMini .qd{padding:10px;gap:4px}
+#rpgMini .qd i{width:18px;height:18px}
+#rpgMini .numOpcoes{max-width:300px;gap:9px;margin-bottom:14px}
+#rpgMini .numOpc{min-height:54px;font-size:24px}
 
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:1ms!important;animation-delay:0ms!important;transition-duration:1ms!important}
@@ -521,7 +551,6 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <div class="rpgTela">
         <canvas id="rpgCanvas" width="240" height="160"></canvas>
         <div id="rpgAviso"></div>
-        <div id="rpgMini"></div>
         <div id="rpgDialogo">
           <div class="rpgRetrato"></div>
           <div style="flex:1">
@@ -554,6 +583,12 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 </main>
 
 <canvas id="conf"></canvas>
+
+<!-- Fora das views de propósito: dentro da .rpgTela o overlay era cortado, e dentro
+     da .view a animação de entrada o prendia num containing block. Aqui ele cobre a
+     tela inteira, igual ao #win. RPG.fechar() já chama fecharMini(), então sair pelo
+     ← não deixa mini-jogo aberto. -->
+<div id="rpgMini"></div>
 
 <div class="win" id="win">
   <div class="winbox">
