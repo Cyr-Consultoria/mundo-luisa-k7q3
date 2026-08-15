@@ -15,9 +15,44 @@
   --ease-out:cubic-bezier(.22,1,.36,1);
   --ease-spring:cubic-bezier(.34,1.56,.64,1);
   --dur-fast:120ms;--dur-med:280ms;--dur-slow:420ms;
+
+  /* marca */
   --rosa:#FF5FA2;--lilas:#A78BFA;--amarelo:#FFD84D;--turq:#35D6D0;--verde:#7BD97B;
-  --tinta:#3B2340;--creme:#FFF4FA;--card:#ffffff;
+  --tinta:#3B2340;--creme:#FFF4FA;--card:#ffffff;--branco:#ffffff;
+
+  /* Hierarquia de material (apple-design §12): superfície clara com tinta escura
+     para conteúdo; cor funda com texto branco para controle. Os dois lados
+     passam em AA — texto branco sobre cor clara não passa em lugar nenhum. */
+  --ctrl-a:#E60061;      /* rosa de controle · branco 4,63:1 */
+  --ctrl-b:#7E55F8;      /* lilás de controle · branco 4,62:1 */
+  --tx-cartao:#3B2340;   /* tinta sobre cartão · ≥4,6:1 em todos os 7 */
+
+  /* Versões de TEXTO da marca: as originais sobre creme dão 1,7–2,6:1.
+     Só para texto em gradiente (título da home); o fundo segue usando as de cima. */
+  --rosa-tx:#FF4493;--lilas-tx:#9A79F9;--turq-tx:#209F9B;   /* ≥3,0:1 sobre creme */
+
+  /* Gradiente dos cartões — claros o bastante para a tinta escura passar em AA.
+     Diferenças e Ateliê não precisaram mudar. */
+  --g1a:#FF7FB6;--g1b:#EB64A6;   /* memória */
+  --g2a:#9C86FF;--g2b:#9A85EA;   /* quebra-cabeça */
+  --g3a:#4FE0D8;--g3b:#12A8A0;   /* diferenças */
+  --g4a:#FFD86B;--g4b:#F0A20C;   /* ateliê */
+  --g5a:#7AE0A0;--g5b:#20A971;   /* aventura */
+  --g6a:#FF9F6B;--g6b:#E8723F;   /* palavra */
+  --g7a:#6BC5FF;--g7b:#4D98E4;   /* números */
+
+  /* superfícies e estados */
+  --veu:rgba(255,255,255,.9);
+  --veu-hdr:rgba(255,244,250,.72);
+  --traco:rgba(120,40,90,.14);
+  --traco-forte:rgba(120,40,90,.22);
+  --ok:#3FBE72;--ok-esc:#1E9E6A;
+  --nao:var(--nao);
+  --escuro:#3C2A5E;--escuro-2:#1E1533;
+  --breve-a:#4A4A5E;--breve-b:#2A2A38;
+  --overlay:rgba(20,14,32,.92);
   --sombra:0 6px 20px rgba(120,40,90,.14);
+  --sombra-alta:0 18px 44px rgba(120,40,90,.24);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;overflow-x:hidden;overscroll-behavior:none;height:100%}
@@ -41,7 +76,7 @@ img{-webkit-user-drag:none;user-drag:none}
   position:sticky;top:0;z-index:60;
   display:flex;align-items:center;gap:10px;
   padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background:rgba(255,244,250,.72);
+  background:var(--veu-hdr);
   backdrop-filter:blur(20px) saturate(180%);
   -webkit-backdrop-filter:blur(20px) saturate(180%);
   transition:box-shadow var(--dur-med) var(--ease-out);
@@ -64,41 +99,53 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .view{display:none}
 .view.on{display:block;animation:viewIn var(--dur-med) var(--ease-out) both}
 .view.on.from-left{animation-name:viewInLeft}
+/* Origin-aware animation: entrando pelo cartão, a tela cresce de onde o dedo tocou,
+   em vez de deslizar de um lado qualquer. O JS grava o transform-origin no toque. */
+.view.on.from-origin{animation-name:viewFromOrigin;animation-duration:var(--dur-slow)}
 @keyframes viewIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @keyframes viewInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes viewFromOrigin{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
 
 /* ---------- Home ---------- */
 .hero{text-align:center;padding:10px 6px 18px}
 .hero .cro{font-size:44px;display:block;animation:float 3.2s var(--ease-out) infinite alternate}
 @keyframes float{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-8px) rotate(4deg)}}
 .hero h2{font-size:clamp(26px,7vw,38px);margin:6px 0 4px;letter-spacing:-.02em;font-weight:900;
-  background:linear-gradient(92deg,var(--rosa),var(--lilas) 55%,var(--turq));
+  background:linear-gradient(92deg,var(--rosa-tx),var(--lilas-tx) 55%,var(--turq-tx));
   -webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p{margin:0;font-size:15px;opacity:.72}
 
-.menu{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.menu{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
 .jogo{
   position:relative;border:0;text-align:left;cursor:pointer;
-  border-radius:26px;padding:18px 16px 16px;color:#fff;
+  border-radius:26px;padding:16px 15px 15px;color:var(--tx-cartao);
   box-shadow:var(--sombra);overflow:hidden;
-  min-height:132px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;
+  min-height:142px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
   /* Stagger */
   animation:cardIn var(--dur-med) var(--ease-out) both;
   animation-delay:calc(var(--i,0) * 70ms);
-  transition:transform var(--dur-fast) var(--ease-out);
+  transition:transform var(--dur-fast) var(--ease-out),box-shadow var(--dur-med) var(--ease-out);
 }
-.jogo:active{transform:scale(.97)}
+/* Press feedback: afunda e recolhe a sombra junto — o cartão encosta na página. */
+.jogo:active{transform:scale(.97);box-shadow:0 2px 8px rgba(120,40,90,.16)}
 @keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-.jogo .em{position:absolute;top:10px;right:12px;font-size:40px;opacity:.9;filter:drop-shadow(0 3px 6px rgba(0,0,0,.18))}
-.jogo b{font-size:19px;letter-spacing:-.01em}
-.jogo span{font-size:13px;opacity:.92;line-height:1.25}
-.j1{background:linear-gradient(140deg,#FF7FB6,#E5348A)}
-.j2{background:linear-gradient(140deg,#9C86FF,#6B4BE0)}
-.j3{background:linear-gradient(140deg,#4FE0D8,#12A8A0)}
-.j4{background:linear-gradient(140deg,#FFD86B,#F0A20C)}
-.j5{background:linear-gradient(140deg,#7AE0A0,#1E9E6A)}
-.j6{background:linear-gradient(140deg,#FF9F6B,#E5622A)}
-.j7{background:linear-gradient(140deg,#6BC5FF,#1E72C8)}
+/* Aresta clara no topo: a luz batendo no material (apple-design §12). */
+.jogo::after{content:'';position:absolute;inset:0;border-radius:26px;pointer-events:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 0 0 1px rgba(59,35,64,.06)}
+.jogo .em{position:absolute;top:12px;right:13px;font-size:38px;line-height:1;
+  filter:drop-shadow(0 2px 5px rgba(59,35,64,.22))}
+/* Tracking negativo cresce com o corpo; entrelinha aperta no título e abre no apoio. */
+.jogo b{font-size:18px;line-height:1.12;letter-spacing:-.02em;font-weight:800;
+  padding-right:34px;text-wrap:balance}
+.jogo span{font-size:12.5px;line-height:1.3;letter-spacing:0;opacity:.78;font-weight:600}
+@media(min-width:700px){ .jogo b{font-size:20px} .jogo span{font-size:13px} }
+.j1{background:linear-gradient(140deg,var(--g1a),var(--g1b))}
+.j2{background:linear-gradient(140deg,var(--g2a),var(--g2b))}
+.j3{background:linear-gradient(140deg,var(--g3a),var(--g3b))}
+.j4{background:linear-gradient(140deg,var(--g4a),var(--g4b))}
+.j5{background:linear-gradient(140deg,var(--g5a),var(--g5b))}
+.j6{background:linear-gradient(140deg,var(--g6a),var(--g6b))}
+.j7{background:linear-gradient(140deg,var(--g7a),var(--g7b))}
 
 /* ---------- Chips / seletor segmentado ---------- */
 .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 14px}
@@ -109,7 +156,9 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
   transition:transform var(--dur-fast) var(--ease-out),background var(--dur-med) var(--ease-out),color var(--dur-med) var(--ease-out);
 }
 .chip:active{transform:scale(.95)}
-.chip.on{background:linear-gradient(135deg,var(--rosa),var(--lilas));color:#fff}
+/* Controle: cor funda + texto branco (4,6:1). O contraste é o que diz "selecionado" —
+   borda sozinha não sustenta estado. */
+.chip.on{background:linear-gradient(135deg,var(--ctrl-a),var(--ctrl-b));color:var(--branco)}
 
 .hud{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 14px}
 .pill{background:#fff;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;box-shadow:var(--sombra)}
@@ -178,14 +227,20 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
   cursor:pointer;box-shadow:var(--sombra);background:#fff;color:var(--tinta);
   transition:transform var(--dur-fast) var(--ease-out)}
 .btn:active{transform:scale(.96)}
-.btn.pri{background:linear-gradient(135deg,var(--rosa),var(--lilas));color:#fff}
+.btn.pri{background:linear-gradient(135deg,var(--ctrl-a),var(--ctrl-b));color:var(--branco)}
 
 /* ---------- Vitória ---------- */
 .win{position:fixed;inset:0;z-index:90;display:none;place-items:center;padding:20px;
   background:rgba(59,35,64,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.win.on{display:grid;animation:fadeIn var(--dur-med) var(--ease-out) both}
+.win.on{display:grid;animation:materializa var(--dur-med) var(--ease-out) both}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.winbox{background:#fff;border-radius:30px;padding:26px 22px;text-align:center;max-width:340px;width:100%;
+/* Materialize, don't just fade: o desfoque entra junto com a opacidade, então a
+   superfície chega como vidro de verdade em vez de um véu que aparece pronto. */
+@keyframes materializa{
+  from{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}
+  to{opacity:1}
+}
+.winbox{background:var(--card);border-radius:30px;padding:26px 22px;text-align:center;max-width:340px;width:100%;
   box-shadow:0 24px 60px rgba(80,20,60,.3);animation:winIn var(--dur-slow) var(--ease-spring) both}
 @keyframes winIn{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:none}}
 .winbox .big{font-size:56px;display:block;margin-bottom:4px}
@@ -204,17 +259,17 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 #rpgMenu{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 /* Faixa que separa as duas aventuras; ocupa a linha inteira da grade. */
 .avSep{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
-  margin:6px 2px 0;padding-bottom:8px;border-bottom:2px solid rgba(120,40,90,.14);
+  margin:6px 2px 0;padding-bottom:8px;border-bottom:2px solid var(--traco);
   animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0)*70ms)}
 .avSep b{font-size:16px;font-weight:900;letter-spacing:-.01em}
 .avSep span{font-size:12px;opacity:.62;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
 .avCard{position:relative;border:0;text-align:left;cursor:pointer;border-radius:24px;padding:16px 14px 14px;
-  background:linear-gradient(150deg,#3C2A5E,#1E1533);color:#fff;box-shadow:var(--sombra);
+  background:linear-gradient(150deg,var(--escuro),var(--escuro-2));color:var(--branco);box-shadow:var(--sombra);
   display:flex;flex-direction:column;gap:3px;min-height:120px;
   animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0)*70ms);
   transition:transform var(--dur-fast) var(--ease-out)}
 .avCard:active{transform:scale(.97)}
-.avCard.breve{opacity:.5;pointer-events:none;background:linear-gradient(150deg,#4A4A5E,#2A2A38)}
+.avCard.breve{opacity:.5;pointer-events:none;background:linear-gradient(150deg,var(--breve-a),var(--breve-b))}
 .avCard .avEm{position:absolute;top:10px;right:12px;font-size:34px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
 .avCard b{font-size:18px;letter-spacing:-.01em}
 .avCard span{font-size:12px;opacity:.8;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
@@ -226,9 +281,9 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
    position:fixed escapa do overflow:hidden da .rpgTela. */
 #rpgMini{position:fixed;inset:0;z-index:80;display:none;place-items:center;
   padding:calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
-  background:rgba(20,14,32,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  background:var(--overlay);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   overflow-y:auto}
-#rpgMini.on{display:grid;animation:fadeIn var(--dur-med) var(--ease-out) both}
+#rpgMini.on{display:grid;animation:materializa var(--dur-med) var(--ease-out) both}
 .miniBox{width:100%;max-width:440px;text-align:center;color:#fff;
   animation:winIn var(--dur-slow) var(--ease-spring) both}
 .miniT{font-size:clamp(14px,3.4vw,18px);font-weight:900;letter-spacing:-.01em;margin-bottom:2px}
@@ -290,7 +345,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .dpad button.press{transform:scale(.9);background:#FFD84D}
 #rpgUp{left:49px;top:0}#rpgDown{left:49px;bottom:0}#rpgLeft{left:0;top:49px}#rpgRight{right:0;top:49px}
 #rpgA{width:88px;height:88px;min-width:88px;border:0;border-radius:50%;font-size:26px;font-weight:900;color:#fff;
-  background:linear-gradient(140deg,var(--rosa),var(--lilas));box-shadow:var(--sombra);cursor:pointer;
+  background:linear-gradient(140deg,var(--ctrl-a),var(--ctrl-b));box-shadow:var(--sombra);cursor:pointer;
   transition:transform var(--dur-fast) var(--ease-out)}
 #rpgA.press{transform:scale(.9)}
 @media(min-width:700px){ .dpad{width:170px;height:170px;flex:0 0 170px} .dpad button{width:58px;height:58px}
@@ -314,7 +369,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .palSlots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 16px}
 .palSlot{
   width:52px;height:60px;border-radius:16px;display:grid;place-items:center;
-  background:rgba(255,255,255,.6);border:3px dashed rgba(120,40,90,.22);
+  background:rgba(255,255,255,.6);border:3px dashed var(--traco-forte);
   font-size:28px;font-weight:900;color:var(--tinta);
   transition:transform var(--dur-fast) var(--ease-out),background var(--dur-med) var(--ease-out),border-color var(--dur-med) var(--ease-out);
 }
@@ -322,7 +377,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .palSlot.cheio:active{transform:scale(.92)}
 .palSlot.travado{background:linear-gradient(135deg,var(--amarelo),#F5B92E);border-color:transparent;cursor:default}
 .palSlots.erro{animation:tremer 420ms var(--ease-out)}
-.palSlots.ok .palSlot{background:linear-gradient(135deg,var(--verde),#3FBE72);border-color:transparent;color:#fff}
+.palSlots.ok .palSlot{background:linear-gradient(135deg,var(--verde),var(--ok));border-color:transparent;color:var(--tinta)}
 @keyframes tremer{0%,100%{transform:none}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 
 .palBanco{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:0 0 18px;min-height:60px}
@@ -341,7 +396,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .numPergunta{
   text-align:center;font-size:clamp(30px,9vw,46px);font-weight:900;letter-spacing:-.02em;
   margin:0 0 4px;min-height:52px;
-  background:linear-gradient(92deg,var(--rosa),var(--lilas) 60%,var(--turq));
+  background:linear-gradient(92deg,var(--rosa-tx),var(--lilas-tx) 60%,var(--turq-tx));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .numApoio{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:0 0 18px;min-height:84px}
@@ -358,10 +413,10 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .qd{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:#fff;
   border-radius:20px;padding:12px;box-shadow:var(--sombra)}
 .qd i{width:22px;height:22px;border-radius:50%;background:rgba(120,40,90,.12);display:block}
-.qd i.on{background:linear-gradient(135deg,var(--rosa),var(--lilas))}
+.qd i.on{background:linear-gradient(135deg,var(--ctrl-a),var(--ctrl-b))}
 .qd i.tira{background:rgba(120,40,90,.12);position:relative}
 .qd i.tira::after{content:'';position:absolute;inset:2px;border-radius:50%;
-  background:linear-gradient(135deg,transparent 44%,#D0455F 44%,#D0455F 56%,transparent 56%)}
+  background:linear-gradient(135deg,transparent 44%,var(--nao) 44%,var(--nao) 56%,transparent 56%)}
 
 .numOpcoes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto 14px}
 .numOpc{
@@ -372,7 +427,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
   transition:transform var(--dur-fast) var(--ease-out),background var(--dur-med) var(--ease-out),color var(--dur-med) var(--ease-out);
 }
 .numOpc:active{transform:scale(.93)}
-.numOpc.certa{background:linear-gradient(135deg,var(--verde),#3FBE72);color:#fff}
+.numOpc.certa{background:linear-gradient(135deg,var(--verde),var(--ok));color:var(--tinta)}
 .numOpc.errada{opacity:.4;pointer-events:none;animation:tremer 420ms var(--ease-out)}
 @media(min-width:700px){ .numOpcoes{max-width:420px} .numOpc{min-height:68px;font-size:30px} }
 
@@ -395,8 +450,27 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 #rpgMini .numOpcoes{max-width:300px;gap:9px;margin-bottom:14px}
 #rpgMini .numOpc{min-height:54px;font-size:24px}
 
+/* ---------- Acessibilidade ----------
+   Movimento reduzido não é ausência de resposta: o :active continua, só some o
+   deslocamento. Os outros dois blocos existem porque este app é feito de
+   superfície translúcida — sem eles, quem liga "reduzir transparência" no iPad
+   fica com o header e os overlays ilegíveis. */
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:1ms!important;animation-delay:0ms!important;transition-duration:1ms!important}
+  .hero .cro{animation:none}
+}
+@media (prefers-reduced-transparency: reduce){
+  .hdr{background:var(--creme);backdrop-filter:none;-webkit-backdrop-filter:none}
+  #rpgMini,.win{background:rgba(20,14,32,.985);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .icon-btn,.chip,.pill,.btn{background:var(--card)}
+  #rpgMini .palSlot{background:rgba(255,255,255,.28)}
+}
+@media (prefers-contrast: more){
+  .jogo::after{box-shadow:inset 0 0 0 2px var(--tinta)}
+  .jogo span{opacity:1}
+  .chip{box-shadow:0 0 0 2px var(--traco-forte),var(--sombra)}
+  .chip.on{box-shadow:0 0 0 2px var(--tinta),var(--sombra)}
+  .palSlot{border-color:var(--tinta)}
 }
 </style>
 </head>
@@ -645,12 +719,21 @@ document.getElementById('btnSom').addEventListener('click', e=>{
 const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vRpg:'Aventura de Luísa'};
 const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vRpg'];
 let atual='vHome';
+/* Origin-aware animation: guarda onde o dedo tocou para a tela nascer dali. */
+let origemToque=null;
 function irPara(id){
   if(id===atual) return;
   const back = ORD.indexOf(id) < ORD.indexOf(atual);
-  document.getElementById(atual).classList.remove('on','from-left');
+  document.getElementById(atual).classList.remove('on','from-left','from-origin');
   const el=document.getElementById(id);
-  el.classList.add('on'); el.classList.toggle('from-left', back);
+  el.classList.add('on');
+  el.classList.toggle('from-left', back && !origemToque);
+  el.classList.toggle('from-origin', !!origemToque && !back);
+  if(origemToque && !back){
+    const r=el.getBoundingClientRect();
+    el.style.transformOrigin=(origemToque.x-r.left)+'px '+(origemToque.y-r.top)+'px';
+  } else el.style.transformOrigin='';
+  origemToque=null;
   atual=id;
   document.getElementById('titulo').textContent = VIEWS[id];
   document.getElementById('btnBack').style.visibility = id==='vHome'?'hidden':'visible';
@@ -663,7 +746,12 @@ function irPara(id){
   if(id==='vNum') novaRodadaNum();
   if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
-document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{beep(740,.09);irPara(b.dataset.go)}));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
+  beep(740,.09);
+  const r=b.getBoundingClientRect();
+  origemToque={x:r.left+r.width/2, y:r.top+r.height/2};
+  irPara(b.dataset.go);
+}));
 document.getElementById('btnBack').addEventListener('click',()=>{beep(520,.09);pararTimers();irPara('vHome')});
 addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('scrolled', scrollY>2),{passive:true});
 

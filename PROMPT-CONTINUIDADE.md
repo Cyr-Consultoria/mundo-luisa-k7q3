@@ -281,14 +281,53 @@ HEIC precisa de `pillow-heif`.
 
 ## 7. Padrão de interface (obrigatório)
 
+Identidade: **este app é do mundo da Luísa, não da Cyr Andrade.** Rosa, lilás,
+creme, coroa. A camada de *craft* do `padrao-html-cyr` vale aqui; a **paleta dark
+neon da casa não entra**. Ao editar cor, leia os tokens do `:root` e trabalhe
+dentro deles.
+
 - `--ease-out: cubic-bezier(.22,1,.36,1)` como padrão; `--ease-spring` só onde houve momentum
 - Feedback no `:active` (nunca só `:hover` — não existe hover no iPad)
 - Alvo de toque mínimo 44 px; `font-size` de input ≥ 16 px (senão o Safari dá zoom)
 - Header translúcido com `backdrop-filter` e o prefixo `-webkit-`
 - Stagger na entrada de listas via `--i`
-- Bloco `@media (prefers-reduced-motion: reduce)` no fim do CSS — não é opcional
+- Os **três** blocos de preferência no fim do CSS: `prefers-reduced-motion`,
+  `prefers-reduced-transparency` e `prefers-contrast` — não são opcionais
 - Testar a 375 px de largura; nada de `overflow-x`
 - `viewport-fit=cover` + `env(safe-area-inset-*)` por causa do notch
+
+### Hierarquia de material — a regra de cor deste app
+
+Descoberta medindo, em 2026-08-15: **os 7 cartões reprovavam em contraste AA**,
+o pior a 1,37:1 (branco sobre o amarelo do Ateliê). Texto branco sobre cor clara
+e alegre não passa em AA em lugar nenhum — escurecer o amarelo até passar virava
+marrom e matava o tom do app. A saída foi separar por função:
+
+| Papel | Superfície | Texto | Tokens |
+|---|---|---|---|
+| **Conteúdo** (cartão de jogo) | cor clara e viva | tinta escura | `--g1a`…`--g7b` + `--tx-cartao` |
+| **Controle** (chip ativo, `.btn.pri`, botão A) | cor funda | branco | `--ctrl-a`, `--ctrl-b` |
+| **Display em gradiente** (título da home) | creme | versões `-tx` da marca | `--rosa-tx`, `--lilas-tx`, `--turq-tx` |
+
+As cores de marca originais (`--rosa`, `--lilas`, `--turq`) continuam válidas
+como **preenchimento**; sobre creme elas dão 1,7–2,6:1 e **não servem como
+texto** — para isso existem as versões `-tx`.
+
+`tests/smoke.js` mede os 20 pares a cada rodada. Cor nova entra como token no
+`:root` e o teste cobra o contraste — é por isso que a regra "zero hex solto"
+existe aqui, e não por estética.
+
+### Motion
+
+- **Origin-aware animation**: tocar um cartão grava `origemToque` e a tela nasce
+  daquele ponto (`.from-origin` + `transform-origin` calculado no `irPara`).
+  O voltar mantém o slide direcional — entrada e saída não precisam ser
+  simétricas aqui porque o gesto de volta é o botão, não o cartão.
+- **Materialize, don't just fade**: `#rpgMini` e `.win` entram com
+  `@keyframes materializa` — o desfoque sobe junto com a opacidade.
+- `#rpgMini`, `.win` e o canvas de confete **moram fora das views**. Se voltarem
+  para dentro, a animação de entrada da view vira containing block e prende os
+  três — foi o que cortava o mini-jogo.
 
 ---
 
@@ -306,21 +345,23 @@ node tests/smoke.js --prod   # a URL de produção
 O script cobre o checklist mínimo e sai com código 1 se qualquer item falhar:
 
 1. Home aparece com os 7 jogos.
-2. Os jogos 1–6 abrem e o Voltar fecha.
-3. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
-4. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
-5. Errar no jogo de números não remove a opção certa.
-6. As ações `palavra` e `numero` abrem o mini-jogo no mapa e o Sair fecha.
-7. **Alcance real dos capítulos 6–10**: BFS pelo mapa a partir de `inicio`, conferindo
+2. **Contraste**: 20 pares de token passam em AA, e os três blocos
+   `prefers-*` estão presentes.
+3. Os jogos 1–6 abrem e o Voltar fecha.
+4. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
+5. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
+6. Errar no jogo de números não remove a opção certa.
+7. As ações `palavra` e `numero` abrem o mini-jogo no mapa e o Sair fecha.
+8. **Alcance real dos capítulos 6–10**: BFS pelo mapa a partir de `inicio`, conferindo
    que todas as metas e o ponto de entrega são alcançáveis a pé.
-8. Os 10 capítulos concluem de ponta a ponta (via `RPG._feito`).
-9. As 3 dificuldades iniciam.
-10. Sair da Aventura volta ao menu de capítulos.
-11. Sem `overflow-x` a 375, 820 e 1024 px.
-12. Nenhum botão visível abaixo de 44 px de altura.
-13. Zero `pageerror` e zero `console.error`.
+9. Os 10 capítulos concluem de ponta a ponta (via `RPG._feito`).
+10. As 3 dificuldades iniciam.
+11. Sair da Aventura volta ao menu de capítulos.
+12. Sem `overflow-x` a 375, 820 e 1024 px.
+13. Nenhum botão visível abaixo de 44 px de altura.
+14. Zero `pageerror` e zero `console.error`.
 
-Hoje são **44 verificações**. `palAlvo` e `numResposta` são globais de propósito —
+Hoje são **46 verificações**. `palAlvo` e `numResposta` são globais de propósito —
 é por elas que o teste sabe a resposta certa sem adivinhar.
 
 Duas armadilhas que já custaram tempo ao escrever teste aqui:

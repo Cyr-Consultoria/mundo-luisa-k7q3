@@ -40,6 +40,50 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   checa(await p.locator('#vHome.on').isVisible(), 'Home aparece');
   checa(await p.locator('[data-go]').count() === 7, 'os 7 jogos estão no menu');
 
+  // ---------- 1b. Contraste AA sobre os tokens ----------
+  // Medido sobre os tokens do :root, não sobre backgroundColor do DOM: os cartões
+  // são gradiente, e leitor de contraste de DOM devolve "transparente" e mente.
+  console.log('\n1b) Contraste (WCAG AA) sobre os tokens do :root');
+  const contraste = await p.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    const tk = n => cs.getPropertyValue(n).trim();
+    const lum = hex => {
+      const h = hex.replace('#', '');
+      const v = [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+        .map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    };
+    const r = (a, b) => { const x = lum(a), y = lum(b);
+      return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    const out = [];
+    // conteúdo: tinta escura sobre os 7 gradientes (texto de 12,5px → 4,5)
+    for (let i = 1; i <= 7; i++)
+      for (const lado of ['a', 'b'])
+        out.push({ o: `cartão j${i}${lado}`, v: r(tk('--tx-cartao'), tk(`--g${i}${lado}`)), min: 4.5 });
+    // controle: branco sobre cor funda (chip ativo, botão .pri, botão A)
+    for (const c of ['--ctrl-a', '--ctrl-b'])
+      out.push({ o: `controle ${c}`, v: r(tk('--branco'), tk(c)), min: 4.5 });
+    // display em gradiente sobre creme (texto grande → 3,0)
+    for (const c of ['--rosa-tx', '--lilas-tx', '--turq-tx'])
+      out.push({ o: `display ${c}`, v: r(tk(c), tk('--creme')), min: 3.0 });
+    // corpo
+    out.push({ o: 'tinta sobre creme', v: r(tk('--tinta'), tk('--creme')), min: 4.5 });
+    return out.map(x => ({ ...x, v: +x.v.toFixed(2) }));
+  });
+  const reprova = contraste.filter(x => x.v < x.min);
+  checa(reprova.length === 0, `${contraste.length} pares de cor passam em AA`,
+        reprova.map(x => `${x.o} ${x.v}:1 (mín ${x.min})`).join(' | '));
+
+  // ---------- 1c. Os três blocos de acessibilidade ----------
+  const midia = await p.evaluate(() => {
+    const css = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (e) { return []; } })
+      .filter(r => r.type === CSSRule.MEDIA_RULE).map(r => r.conditionText || r.media.mediaText);
+    return ['prefers-reduced-motion', 'prefers-reduced-transparency', 'prefers-contrast']
+      .filter(q => !css.some(m => m.includes(q)));
+  });
+  checa(midia.length === 0, 'reduced-motion, reduced-transparency e contrast presentes',
+        'faltando: ' + midia.join(', '));
+
   // ---------- 2. Os jogos simples abrem e o Voltar fecha ----------
   console.log('\n2) Jogos 1–6 abrem e voltam');
   for (const [go, nome] of [['vMem', 'Memória'], ['vPuz', 'Quebra-cabeça'],
