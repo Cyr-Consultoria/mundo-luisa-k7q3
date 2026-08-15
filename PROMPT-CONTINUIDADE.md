@@ -317,6 +317,34 @@ texto** — para isso existem as versões `-tx`.
 `:root` e o teste cobra o contraste — é por isso que a regra "zero hex solto"
 existe aqui, e não por estética.
 
+### Tela de abertura (`AB`, no `app_template.html`)
+
+Cena de overworld em pixel art desenhada no `#abCanvas` com **o mesmo
+`atlas.png` do RPG** — nenhum asset novo entrou no arquivo. Camadas, da mais
+lenta para a mais rápida: nuvens (0,10) → morros (0,22 e 0,42) → árvores (0,55)
+→ chão (1,0). A Luísa caminha no lugar em escala 2× e o chão passa por baixo.
+
+Inspiração é de gênero, não de asset: parallax de overworld com a heroína
+andando, "toque para começar" pulsando no rodapé (o PRESS START de fliperama) e
+o beat de confirmação da escolha (character select).
+
+Regras que já custaram um retrabalho cada:
+
+- **Largura interna fixa em 240** (resolução GBA) e altura pela proporção do
+  aparelho. Assim o pixel tem o mesmo tamanho que no RPG em qualquer tela.
+- **O horizonte fica em 73% da altura.** Mais alto, o gramado vira um verde
+  chapado ocupando 40% da tela; mais baixo, a Luísa some atrás do botão.
+- **As árvores pisam numa faixa de grama, não no morro.** O tile de árvore
+  carrega o próprio fundo; desenhado sobre o morro, aparecia um quadrado verde
+  escuro em volta de cada uma. Por isso o chão começa uma linha acima do
+  horizonte e as árvores são desenhadas depois dele.
+- **A fanfarra toca ao dispensar, não ao abrir.** O iOS só libera áudio depois
+  de um gesto — antes do primeiro toque não sai som nenhum.
+- **`prefers-reduced-motion` desliga o loop**, não só as transições: o `AB` nem
+  chama `requestAnimationFrame` e desenha um quadro parado.
+- Em tela deitada o título subia até encostar na coroa da Luísa; há um
+  `@media (min-aspect-ratio:1/1)` que empurra o bloco para cima.
+
 ### Motion
 
 - **Origin-aware animation**: tocar um cartão grava `origemToque` e a tela nasce
@@ -325,9 +353,14 @@ existe aqui, e não por estética.
   simétricas aqui porque o gesto de volta é o botão, não o cartão.
 - **Materialize, don't just fade**: `#rpgMini` e `.win` entram com
   `@keyframes materializa` — o desfoque sobe junto com a opacidade.
-- `#rpgMini`, `.win` e o canvas de confete **moram fora das views**. Se voltarem
-  para dentro, a animação de entrada da view vira containing block e prende os
-  três — foi o que cortava o mini-jogo.
+- `#rpgMini`, `.win`, `#abertura` e o canvas de confete **moram fora das views**.
+  Se voltarem para dentro, a animação de entrada da view vira containing block e
+  prende os quatro — foi o que cortava o mini-jogo.
+- **Character-select**: tocar um cartão acende `.confirmando` no `.menu` e
+  `.escolhido` no cartão por 180 ms antes de trocar de tela.
+  A regra precisa de `animation:none` — a entrada usa `cardIn … both`, e o
+  fill-mode mantém os valores do último keyframe aplicados, que **vencem** a
+  `opacity`/`transform` declaradas. Sem isso o beat não aparece e não dá erro.
 
 ---
 
@@ -344,28 +377,32 @@ node tests/smoke.js --prod   # a URL de produção
 
 O script cobre o checklist mínimo e sai com código 1 se qualquer item falhar:
 
-1. Home aparece com os 7 jogos.
-2. **Contraste**: 20 pares de token passam em AA, e os três blocos
+1. A abertura aparece, a cena é desenhada, o parallax anda, o toque dispensa e o
+   loop é cancelado ao sair.
+2. Home aparece com os 7 jogos, e o beat de confirmação da escolha funciona.
+3. **Contraste**: 20 pares de token passam em AA, e os três blocos
    `prefers-*` estão presentes.
-3. Os jogos 1–6 abrem e o Voltar fecha.
-4. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
-5. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
-6. Errar no jogo de números não remove a opção certa.
-7. As ações `palavra` e `numero` abrem o mini-jogo no mapa e o Sair fecha.
-8. **Alcance real dos capítulos 6–10**: BFS pelo mapa a partir de `inicio`, conferindo
+4. Os jogos 1–6 abrem e o Voltar fecha.
+5. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
+6. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
+7. Errar no jogo de números não remove a opção certa.
+8. As ações `palavra` e `numero` abrem o mini-jogo no mapa e o Sair fecha.
+9. **Alcance real dos capítulos 6–10**: BFS pelo mapa a partir de `inicio`, conferindo
    que todas as metas e o ponto de entrega são alcançáveis a pé.
-9. Os 10 capítulos concluem de ponta a ponta (via `RPG._feito`).
-10. As 3 dificuldades iniciam.
-11. Sair da Aventura volta ao menu de capítulos.
-12. Sem `overflow-x` a 375, 820 e 1024 px.
-13. Nenhum botão visível abaixo de 44 px de altura.
-14. Zero `pageerror` e zero `console.error`.
+10. Os 10 capítulos concluem de ponta a ponta (via `RPG._feito`).
+11. As 3 dificuldades iniciam.
+12. Sair da Aventura volta ao menu de capítulos.
+13. Sem `overflow-x` a 375, 820 e 1024 px.
+14. Nenhum botão visível abaixo de 44 px de altura.
+15. Zero `pageerror` e zero `console.error`.
 
-Hoje são **46 verificações**. `palAlvo` e `numResposta` são globais de propósito —
+Hoje são **54 verificações**. `palAlvo` e `numResposta` são globais de propósito —
 é por elas que o teste sabe a resposta certa sem adivinhar.
 
 Duas armadilhas que já custaram tempo ao escrever teste aqui:
 
+- **A abertura cobre a tela no carregamento.** Todo teste precisa dispensá-la
+  antes de tocar em qualquer coisa (`dispatchEvent('pointerdown')` em `#abertura`).
 - **Meta com `antes:` abre diálogo antes do mini-jogo.** Um `_a()` só não abre nada;
   tem que apertar A até `#rpgMini.on` aparecer.
 - **`RPG._dbg().x` já vem em tiles** (`jog.x/TS`), não em pixels. Dividir por 16 de

@@ -450,6 +450,70 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 #rpgMini .numOpcoes{max-width:300px;gap:9px;margin-bottom:14px}
 #rpgMini .numOpc{min-height:54px;font-size:24px}
 
+/* ---------- Tela de abertura ----------
+   Inspiração de gênero, não de asset: parallax de overworld com a heroína
+   caminhando (Mario/Zelda), o "toque para começar" pulsando no rodapé (PRESS
+   START de fliperama) e o beat de confirmação da escolha (character select de
+   Smash/Mario Kart). A arte é o próprio atlas do RPG — zero asset novo. */
+#abertura{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
+  overflow:hidden;background:var(--creme);touch-action:manipulation}
+#abertura.off{display:none}
+#abertura.saindo{animation:abSai 460ms var(--ease-out) forwards}
+@keyframes abSai{to{opacity:0;transform:scale(1.09)}}
+#abCanvas{position:absolute;inset:0;width:100%;height:100%;
+  image-rendering:pixelated;image-rendering:crisp-edges}
+/* Véu claro no topo: garante leitura do título sobre um céu que muda. */
+#abertura::before{content:'';position:absolute;inset:0 0 40% 0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,244,250,.92),rgba(255,244,250,0))}
+
+.abFrente{position:relative;z-index:2;text-align:center;padding:0 22px;
+  display:flex;flex-direction:column;align-items:center;
+  transform:translateY(-11vh);width:100%}
+.abCoroa{font-size:clamp(42px,13vw,68px);line-height:1;
+  filter:drop-shadow(0 6px 10px rgba(120,40,90,.28));
+  animation:abCoroa 760ms var(--ease-spring) 160ms both}
+@keyframes abCoroa{from{opacity:0;transform:translateY(-80px) rotate(-28deg) scale(.6)}
+  to{opacity:1;transform:none}}
+.abTop{font-size:clamp(13px,3.6vw,17px);font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--tinta);opacity:.62;margin-top:2px;
+  animation:abSobe 520ms var(--ease-out) 520ms both}
+.abTitulo{margin:0;font-size:clamp(46px,15.5vw,88px);line-height:.98;font-weight:900;
+  letter-spacing:-.035em;color:var(--tinta);display:flex;justify-content:center}
+/* Stagger letra a letra — cada uma cai com mola própria. */
+.abTitulo i{display:inline-block;font-style:normal;
+  animation:abLetra 620ms var(--ease-spring) both;
+  animation-delay:calc(640ms + var(--i,0) * 72ms)}
+@keyframes abLetra{from{opacity:0;transform:translateY(-46px) scale(.72) rotate(-9deg)}
+  to{opacity:1;transform:none}}
+.abSub{font-size:clamp(13px,3.7vw,17px);font-weight:700;color:var(--tinta);opacity:.72;
+  margin-top:8px;animation:abSobe 520ms var(--ease-out) 1180ms both}
+@keyframes abSobe{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Em tela deitada sobra pouca altura e o título encostava na coroa da Luísa. */
+@media (min-aspect-ratio:1/1){
+  .abFrente{transform:translateY(-23vh)}
+  .abCoroa{font-size:clamp(36px,6.5vw,58px)}
+  .abTitulo{font-size:clamp(40px,9vw,82px)}
+}
+.abPrompt{position:absolute;left:0;right:0;bottom:calc(30px + env(safe-area-inset-bottom));
+  z-index:2;text-align:center;font-size:clamp(15px,4.2vw,19px);font-weight:800;
+  letter-spacing:.02em;color:var(--tinta);
+  animation:abSobe 460ms var(--ease-out) 1500ms both}
+.abPrompt span{display:inline-block;background:var(--veu);border-radius:999px;
+  padding:13px 24px;min-height:44px;box-shadow:var(--sombra);
+  animation:abPulsa 1.5s var(--ease-out) 1960ms infinite}
+@keyframes abPulsa{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+
+/* Character-select: o cartão escolhido sobe, os outros recuam.
+   `animation:none` é obrigatório aqui: a entrada usa `cardIn ... both`, e o
+   fill-mode mantém os valores do último keyframe aplicados — eles vencem a
+   opacity/transform declarados abaixo e o beat simplesmente não aparecia. */
+.menu.confirmando .jogo{animation:none;
+  transition:transform var(--dur-med) var(--ease-out),
+  opacity var(--dur-med) var(--ease-out),box-shadow var(--dur-med) var(--ease-out)}
+.menu.confirmando .jogo:not(.escolhido){opacity:.32;transform:scale(.94)}
+.menu.confirmando .jogo.escolhido{transform:scale(1.05);box-shadow:var(--sombra-alta);z-index:2}
+
 /* ---------- Acessibilidade ----------
    Movimento reduzido não é ausência de resposta: o :active continua, só some o
    deslocamento. Os outros dois blocos existem porque este app é feito de
@@ -458,6 +522,8 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:1ms!important;animation-delay:0ms!important;transition-duration:1ms!important}
   .hero .cro{animation:none}
+  /* A abertura vira quadro parado: o JS não roda o loop e o pulso do prompt sai. */
+  .abPrompt span{animation:none}
 }
 @media (prefers-reduced-transparency: reduce){
   .hdr{background:var(--creme);backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -658,6 +724,21 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 
 <canvas id="conf"></canvas>
 
+<!-- Tela de abertura. Cena em pixel art no canvas, texto em DOM por cima para
+     ficar nítido e legível. Qualquer toque entra no app. -->
+<div id="abertura" role="button" tabindex="0" aria-label="Toque para começar">
+  <canvas id="abCanvas"></canvas>
+  <div class="abFrente">
+    <span class="abCoroa">👑</span>
+    <span class="abTop">O Mundo da</span>
+    <h1 class="abTitulo" aria-label="Luísa">
+      <i style="--i:0">L</i><i style="--i:1">U</i><i style="--i:2">Í</i><i style="--i:3">S</i><i style="--i:4">A</i>
+    </h1>
+    <span class="abSub">7 jogos · 10 capítulos de aventura</span>
+  </div>
+  <div class="abPrompt"><span>▶ Toque para começar</span></div>
+</div>
+
 <!-- Fora das views de propósito: dentro da .rpgTela o overlay era cortado, e dentro
      da .view a animação de entrada o prendia num containing block. Aqui ele cobre a
      tela inteira, igual ao #win. RPG.fechar() já chama fecharMini(), então sair pelo
@@ -746,11 +827,22 @@ function irPara(id){
   if(id==='vNum') novaRodadaNum();
   if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
+/* Character-select: o cartão escolhido sobe e os outros recuam por um instante
+   antes da tela trocar. É o beat de confirmação dos jogos de seleção — e ele
+   também mostra à criança QUAL cartão ela acertou com o dedo. */
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{
   beep(740,.09);
   const r=b.getBoundingClientRect();
   origemToque={x:r.left+r.width/2, y:r.top+r.height/2};
-  irPara(b.dataset.go);
+  const menu=b.closest('.menu');
+  const entrar=()=>{
+    irPara(b.dataset.go);
+    if(menu){ menu.classList.remove('confirmando'); b.classList.remove('escolhido'); }
+  };
+  if(menu && !RM){
+    menu.classList.add('confirmando'); b.classList.add('escolhido');
+    setTimeout(entrar,180);
+  } else entrar();
 }));
 document.getElementById('btnBack').addEventListener('click',()=>{beep(520,.09);pararTimers();irPara('vHome')});
 addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('scrolled', scrollY>2),{passive:true});
@@ -2719,9 +2811,133 @@ document.getElementById('rpgArrumar').addEventListener('click',()=>{beep(700,.09
 document.getElementById('rpgVoltarMenu').addEventListener('click',()=>{beep(520,.09);RPG.voltarMenu()});
 document.getElementById('rpgRecomecar').addEventListener('click',()=>{beep(700,.09);RPG.reiniciar()});
 
+/* =================== Tela de abertura ===================
+   Cena de overworld em pixel art usando o MESMO atlas do RPG: nenhum asset novo
+   entra no arquivo. Camadas com velocidades diferentes (parallax) e a Luísa
+   caminhando no lugar — o chão passa por baixo dela. */
+const AB = (() => {
+  const TS=16, CH_H=24;
+  const T_GRAMA=0, T_GRAMA2=1, T_ARVORE=3, T_ARBUSTO=4, T_FLOR=15;
+  const LUISA_DIR=6;                         /* Luísa virada para a direita: 6 e 7 */
+  let cv, cx, W=240, H=400, atlas=null, raf=null, t=0, fechada=false;
+
+  const dTile=(i,x,y)=>cx.drawImage(atlas,i*TS,CH_H,TS,TS,x,y,TS,TS);
+  const dChar=(i,x,y)=>cx.drawImage(atlas,i*TS,0,TS,CH_H,x,y,TS,CH_H);
+
+  function medir(){
+    cv=document.getElementById('abCanvas');
+    /* Largura interna fixa em 240 (resolução GBA): a escala do pixel fica igual
+       à do RPG em qualquer tela. A altura acompanha a proporção do aparelho. */
+    W=240; H=Math.max(200,Math.min(700,Math.round(240*innerHeight/Math.max(1,innerWidth))));
+    cv.width=W; cv.height=H; cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false;
+  }
+
+  /* Sorteio estável: a mesma cena a cada abertura, sem tremer entre quadros. */
+  const rnd=(s)=>{ const x=Math.sin(s*127.1)*43758.5453; return x-Math.floor(x); };
+
+  function cena(){
+    /* Horizonte a ~73%: mais alto que isso o gramado vira um verde chapado
+       ocupando 40% da tela; mais baixo, a Luísa some atrás do botão. */
+    const chao=Math.round(H*0.73);
+
+    const ceu=cx.createLinearGradient(0,0,0,chao+8);
+    ceu.addColorStop(0,'#FFF4FA'); ceu.addColorStop(.40,'#FFE3F1');
+    ceu.addColorStop(.70,'#E4E0FF'); ceu.addColorStop(1,'#D9FBF6');
+    cx.fillStyle=ceu; cx.fillRect(0,0,W,chao+8);
+
+    cx.fillStyle='rgba(255,216,77,.26)'; cx.beginPath(); cx.arc(W-46,60,32,0,7); cx.fill();
+    cx.fillStyle='#FFD84D'; cx.beginPath(); cx.arc(W-46,60,20,0,7); cx.fill();
+
+    /* nuvens — camada mais lenta */
+    cx.fillStyle='rgba(255,255,255,.82)';
+    for(let i=0;i<7;i++){
+      const larguraCiclo=W+70;
+      const x=((rnd(i+1)*W - t*0.10) % larguraCiclo + larguraCiclo) % larguraCiclo - 35;
+      const y=34+rnd(i+9)*(chao*0.52), r=8+rnd(i+3)*7;
+      cx.beginPath(); cx.arc(x,y,r,0,7); cx.arc(x+r*0.9,y-r*0.4,r*0.82,0,7);
+      cx.arc(x+r*1.8,y,r*0.7,0,7); cx.fill();
+    }
+
+    /* brilhos flutuando: é o que preenche o miolo do céu sem poluir o título */
+    for(let i=0;i<14;i++){
+      const x=rnd(i+31)*W;
+      const y=((rnd(i+17)*chao - t*0.28) % chao + chao) % chao;
+      const s=1+Math.round(rnd(i+41)*2);
+      cx.fillStyle=`rgba(255,255,255,${.35+Math.sin((t*0.06)+i)*0.3})`;
+      cx.fillRect(Math.round(x),Math.round(y),s,s);
+      cx.fillRect(Math.round(x)-s,Math.round(y)+s,s,s);
+    }
+
+    /* morros ao fundo — duas camadas */
+    [['#C9E9D6',0.22,34],['#A8DCC0',0.42,16]].forEach(([cor,vel,alt])=>{
+      cx.fillStyle=cor; cx.beginPath(); cx.moveTo(0,chao+8);
+      for(let x=0;x<=W;x+=4){
+        const o=(x + t*vel)*0.035;
+        cx.lineTo(x, chao-alt + Math.sin(o)*10 + Math.sin(o*2.3)*5);
+      }
+      cx.lineTo(W,chao+8); cx.closePath(); cx.fill();
+    });
+
+    /* Chão primeiro, começando UMA linha acima do horizonte: as árvores precisam
+       de grama sob os pés. Desenhadas sobre o morro, o fundo do próprio tile
+       aparecia como um quadrado verde escuro em volta de cada árvore. */
+    const vC=1.0, topo=chao-TS, linhas=Math.ceil((H-topo)/TS)+1;
+    for(let linha=0; linha<linhas; linha++){
+      const y=topo+linha*TS;
+      for(let i=-1;i<W/TS+2;i++){
+        const x=((i*TS - t*vC) % (W+TS) + W+TS) % (W+TS) - TS;
+        const id=Math.floor((i*TS - t*vC)/TS);
+        dTile(rnd(id*3+linha)>.78?T_GRAMA2:T_GRAMA, Math.round(x), y);
+        if(linha>0 && rnd(id*7+linha*13)>.90) dTile(T_FLOR, Math.round(x), y);
+      }
+    }
+
+    /* linha de árvores — espaçamento e altura sorteados, com clareiras: passo fixo
+       vira cerca viva e o olho lê "textura", não "bosque". */
+    const vT=0.55, larg=W+TS*4;
+    for(let i=0;i<26;i++){
+      if(rnd(i+61)>.82) continue;
+      const x=((i*27+rnd(i+11)*14 - t*vT) % larg + larg) % larg - TS*2;
+      dTile(rnd(i+5)>.42?T_ARVORE:T_ARBUSTO, Math.round(x), topo);
+    }
+
+    /* Luísa em dobro: no tamanho do RPG ela some numa tela de celular, e aqui
+       ela é a heroína do cartaz. Escala 2× mantém o pixel inteiro. */
+    const passo=Math.floor(t/9)%2, bob=passo?1:0, esc=2;
+    const lx=Math.round(W*0.5-(TS*esc)/2), ly=chao-CH_H*esc+2+bob*esc;
+    cx.fillStyle='rgba(59,35,64,.16)';
+    cx.beginPath(); cx.ellipse(lx+TS, chao+2, 13, 4, 0, 0, 7); cx.fill();
+    cx.drawImage(atlas,(LUISA_DIR+passo)*TS,0,TS,CH_H, lx,ly, TS*esc,CH_H*esc);
+  }
+
+  function quadro(){ t+=1; cena(); raf=requestAnimationFrame(quadro); }
+
+  function fechar(){
+    if(fechada) return; fechada=true;
+    if(raf) cancelAnimationFrame(raf);
+    sWin(); confete(70);                 /* o iOS só libera áudio depois do gesto */
+    const el=document.getElementById('abertura');
+    el.classList.add('saindo');
+    setTimeout(()=>el.classList.add('off'), RM?0:470);
+  }
+
+  function iniciar(){
+    const el=document.getElementById('abertura');
+    medir(); addEventListener('resize',()=>{ if(!fechada){ medir(); cena(); } });
+    atlas=new Image();
+    atlas.onload=()=>{ cena(); if(!RM && !fechada) raf=requestAnimationFrame(quadro); };
+    atlas.src=ATLAS_URL;
+    /* Responde no pointerdown, não no clique: feedback imediato. */
+    el.addEventListener('pointerdown', fechar, {once:true});
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') fechar(); });
+  }
+  return { iniciar, fechar, _fechada:()=>fechada };
+})();
+
 /* =================== Boot =================== */
 document.getElementById('btnSom').classList.toggle('off',!somOn);
 RPG.boot();
+AB.iniciar();
 document.querySelector('#rpgDialogo .rpgRetrato').style.backgroundImage = `url('${IMGS[8]}')`;
 </script>
 </body>

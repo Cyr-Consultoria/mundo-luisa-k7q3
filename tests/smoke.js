@@ -35,10 +35,66 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   await p.reload({ waitUntil: 'load' });
   await p.waitForTimeout(600);
 
+  // ---------- 0. Tela de abertura ----------
+  console.log('0) Tela de abertura');
+  checa(await p.locator('#abertura').isVisible(), 'abertura aparece no carregamento');
+  const cena = await p.evaluate(() => {
+    const c = document.getElementById('abCanvas');
+    const x = c.getContext('2d');
+    const d = x.getImageData(0, 0, c.width, c.height).data;
+    const cores = new Set();
+    for (let i = 0; i < d.length; i += 4 * 97) cores.add(`${d[i]},${d[i+1]},${d[i+2]}`);
+    return { w: c.width, h: c.height, cores: cores.size };
+  });
+  checa(cena.w === 240 && cena.h > 200, `canvas em ${cena.w}×${cena.h} (largura GBA fixa)`);
+  checa(cena.cores > 12, `cena desenhada — ${cena.cores} cores distintas no quadro`,
+        'canvas praticamente vazio');
+  const letras = await p.locator('.abTitulo i').count();
+  checa(letras === 5, 'título com stagger letra a letra');
+
+  // a cena precisa ANDAR: dois quadros distantes não podem ser idênticos
+  const assinatura = () => p.evaluate(() => {
+    const c = document.getElementById('abCanvas');
+    // faixa do chão: chao = H-56, então H-40 cai dentro da grama que rola
+    const d = c.getContext('2d').getImageData(0, c.height - 40, c.width, 8).data;
+    let s = 0; for (let i = 0; i < d.length; i += 4) s = (s * 31 + d[i] + d[i+1] * 3) % 1e9;
+    return s;
+  });
+  const a1 = await assinatura();
+  await p.waitForTimeout(700);
+  const a2 = await assinatura();
+  checa(a1 !== a2, 'parallax do chão está animando', `assinatura igual (${a1})`);
+
+  // dispensar: pointerdown, não clique
+  await p.locator('#abertura').dispatchEvent('pointerdown');
+  await p.waitForTimeout(700);
+  checa(!(await p.locator('#abertura').isVisible()), 'toque dispensa a abertura');
+  const parou = await p.evaluate(() => AB._fechada());
+  checa(parou, 'loop da abertura foi cancelado ao sair');
+
   // ---------- 1. Tela de início ----------
-  console.log('1) Tela de início');
+  console.log('\n1) Tela de início');
   checa(await p.locator('#vHome.on').isVisible(), 'Home aparece');
   checa(await p.locator('[data-go]').count() === 7, 'os 7 jogos estão no menu');
+
+  // ---------- 1a. Beat de confirmação da escolha ----------
+  // Falhou em silêncio uma vez: `animation:cardIn ... both` mantinha os valores do
+  // último keyframe e eles venciam a opacity/transform da regra de confirmação.
+  const beat = await p.evaluate(async () => {
+    const alvo = document.querySelector('[data-go="vDif"]');
+    const menu = alvo.closest('.menu');
+    menu.classList.add('confirmando'); alvo.classList.add('escolhido');
+    await new Promise(r => setTimeout(r, 340));
+    const r = {
+      outro: +getComputedStyle(document.querySelector('[data-go="vMem"]')).opacity,
+      escolhido: getComputedStyle(alvo).transform
+    };
+    menu.classList.remove('confirmando'); alvo.classList.remove('escolhido');
+    return r;
+  });
+  checa(beat.outro < 0.5 && beat.escolhido.includes('1.05'),
+        'cartão escolhido cresce e os outros recuam',
+        `outro=${beat.outro} escolhido=${beat.escolhido}`);
 
   // ---------- 1b. Contraste AA sobre os tokens ----------
   // Medido sobre os tokens do :root, não sobre backgroundColor do DOM: os cartões
