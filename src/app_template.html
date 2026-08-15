@@ -97,6 +97,8 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .j3{background:linear-gradient(140deg,#4FE0D8,#12A8A0)}
 .j4{background:linear-gradient(140deg,#FFD86B,#F0A20C)}
 .j5{background:linear-gradient(140deg,#7AE0A0,#1E9E6A)}
+.j6{background:linear-gradient(140deg,#FF9F6B,#E5622A)}
+.j7{background:linear-gradient(140deg,#6BC5FF,#1E72C8)}
 
 /* ---------- Chips / seletor segmentado ---------- */
 .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 14px}
@@ -288,6 +290,81 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
   #ateWrap{width:min(70vw,520px)}
   .ref{width:104px;height:104px}
 }
+/* ---------- Monta a Palavra ---------- */
+.palPista{
+  display:grid;place-items:center;margin:0 auto 14px;
+  width:min(58vw,180px);height:min(58vw,180px);border-radius:30px;
+  background:#fff;box-shadow:var(--sombra);font-size:min(30vw,96px);line-height:1;
+  animation:cardIn var(--dur-med) var(--ease-out) both;
+}
+.palPista.foto{background-size:cover;background-position:center;font-size:0}
+.palPista .leg{position:absolute;font-size:0}
+
+.palSlots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 16px}
+.palSlot{
+  width:52px;height:60px;border-radius:16px;display:grid;place-items:center;
+  background:rgba(255,255,255,.6);border:3px dashed rgba(120,40,90,.22);
+  font-size:28px;font-weight:900;color:var(--tinta);
+  transition:transform var(--dur-fast) var(--ease-out),background var(--dur-med) var(--ease-out),border-color var(--dur-med) var(--ease-out);
+}
+.palSlot.cheio{background:#fff;border-style:solid;border-color:transparent;box-shadow:var(--sombra);cursor:pointer}
+.palSlot.cheio:active{transform:scale(.92)}
+.palSlot.travado{background:linear-gradient(135deg,var(--amarelo),#F5B92E);border-color:transparent;cursor:default}
+.palSlots.erro{animation:tremer 420ms var(--ease-out)}
+.palSlots.ok .palSlot{background:linear-gradient(135deg,var(--verde),#3FBE72);border-color:transparent;color:#fff}
+@keyframes tremer{0%,100%{transform:none}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+.palBanco{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin:0 0 18px;min-height:60px}
+.palLetra{
+  width:52px;height:56px;min-width:44px;border:0;border-radius:16px;cursor:pointer;
+  font:inherit;font-size:26px;font-weight:900;color:var(--tinta);
+  background:#fff;box-shadow:var(--sombra);
+  animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0) * 40ms);
+  transition:transform var(--dur-fast) var(--ease-out),opacity var(--dur-med) var(--ease-out);
+}
+.palLetra:active{transform:scale(.9)}
+.palLetra.usada{opacity:0;pointer-events:none;transform:scale(.6)}
+@media(min-width:700px){ .palSlot,.palLetra{width:62px} .palSlot{height:70px} .palLetra{height:64px} }
+
+/* ---------- Conta com a Luísa ---------- */
+.numPergunta{
+  text-align:center;font-size:clamp(30px,9vw,46px);font-weight:900;letter-spacing:-.02em;
+  margin:0 0 4px;min-height:52px;
+  background:linear-gradient(92deg,var(--rosa),var(--lilas) 60%,var(--turq));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.numApoio{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin:0 0 18px;min-height:84px}
+.numApoio .grupo{
+  display:flex;gap:5px;flex-wrap:wrap;justify-content:center;max-width:190px;
+  background:#fff;border-radius:22px;padding:12px 14px;box-shadow:var(--sombra);
+  animation:cardIn var(--dur-med) var(--ease-out) both;
+}
+.numApoio .grupo span{font-size:26px;line-height:1}
+.numApoio .sinal{font-size:30px;font-weight:900;opacity:.55}
+.numApoio.pisca .grupo{animation:pulsar 900ms var(--ease-out) 2}
+@keyframes pulsar{0%,100%{transform:none}50%{transform:scale(1.06)}}
+
+.qd{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:#fff;
+  border-radius:20px;padding:12px;box-shadow:var(--sombra)}
+.qd i{width:22px;height:22px;border-radius:50%;background:rgba(120,40,90,.12);display:block}
+.qd i.on{background:linear-gradient(135deg,var(--rosa),var(--lilas))}
+.qd i.tira{background:rgba(120,40,90,.12);position:relative}
+.qd i.tira::after{content:'';position:absolute;inset:2px;border-radius:50%;
+  background:linear-gradient(135deg,transparent 44%,#D0455F 44%,#D0455F 56%,transparent 56%)}
+
+.numOpcoes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto 14px}
+.numOpc{
+  min-height:60px;border:0;border-radius:20px;cursor:pointer;
+  font:inherit;font-size:26px;font-weight:900;color:var(--tinta);
+  background:#fff;box-shadow:var(--sombra);
+  animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0) * 45ms);
+  transition:transform var(--dur-fast) var(--ease-out),background var(--dur-med) var(--ease-out),color var(--dur-med) var(--ease-out);
+}
+.numOpc:active{transform:scale(.93)}
+.numOpc.certa{background:linear-gradient(135deg,var(--verde),#3FBE72);color:#fff}
+.numOpc.errada{opacity:.4;pointer-events:none;animation:tremer 420ms var(--ease-out)}
+@media(min-width:700px){ .numOpcoes{max-width:420px} .numOpc{min-height:68px;font-size:30px} }
+
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:1ms!important;animation-delay:0ms!important;transition-duration:1ms!important}
 }
@@ -314,7 +391,9 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <button class="jogo j2" style="--i:1" data-go="vPuz"><span class="em">🧩</span><b>Quebra-cabeça</b><span>Monte a foto deslizando as peças</span></button>
       <button class="jogo j3" style="--i:2" data-go="vDif"><span class="em">🔍</span><b>Ache as Diferenças</b><span>O que mudou na segunda foto?</span></button>
       <button class="jogo j4" style="--i:3" data-go="vAte"><span class="em">✨</span><b>Ateliê de Adesivos</b><span>Decore a sua foto e salve</span></button>
-      <button class="jogo j5" style="--i:4" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
+      <button class="jogo j6" style="--i:4" data-go="vPal"><span class="em">🔤</span><b>Monta a Palavra</b><span>Toque nas letras e forme a palavra</span></button>
+      <button class="jogo j7" style="--i:5" data-go="vNum"><span class="em">🔢</span><b>Conta com a Luísa</b><span>Conte, some e diminua</span></button>
+      <button class="jogo j5" style="--i:6" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
     </div>
   </section>
 
@@ -380,6 +459,43 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
     <p style="text-align:center;font-size:13px;opacity:.7;margin-top:10px">
       Arraste os adesivos. Toque duas vezes num adesivo para girar e crescer.
     </p>
+  </section>
+
+  <!-- MONTA A PALAVRA -->
+  <section class="view" id="vPal">
+    <div class="chips" id="palChips">
+      <button class="chip on" data-n="3">Fácil · 3 letras</button>
+      <button class="chip" data-n="4">Médio · 4 letras</button>
+      <button class="chip" data-n="6">Difícil · 5 e 6</button>
+    </div>
+    <div class="hud">
+      <div class="pill">📖 Palavra <b id="palN">1</b>/6</div>
+      <div class="pill">⭐ Acertou <b id="palAcertos">0</b></div>
+    </div>
+    <div class="palPista" id="palPista"></div>
+    <div class="palSlots" id="palSlots"></div>
+    <div class="palBanco" id="palBanco"></div>
+    <div class="acoes">
+      <button class="btn" id="palDica">💡 Dica</button>
+      <button class="btn pri" id="palNovo">🔄 Outras palavras</button>
+    </div>
+  </section>
+
+  <!-- CONTA COM A LUÍSA -->
+  <section class="view" id="vNum">
+    <div class="chips" id="numChips">
+      <button class="chip on" data-n="1">Fácil · contar</button>
+      <button class="chip" data-n="2">Médio · até 10</button>
+      <button class="chip" data-n="3">Difícil · até 20</button>
+    </div>
+    <div class="hud">
+      <div class="pill">🔢 Conta <b id="numN">1</b>/8</div>
+      <div class="pill">⭐ Acertou <b id="numAcertos">0</b></div>
+    </div>
+    <div class="numPergunta" id="numPergunta"></div>
+    <div class="numApoio" id="numApoio"></div>
+    <div class="numOpcoes" id="numOpcoes"></div>
+    <div class="acoes"><button class="btn pri" id="numNovo">🔄 Outras contas</button></div>
   </section>
 
   <!-- AVENTURA (RPG) -->
@@ -491,8 +607,8 @@ document.getElementById('btnSom').addEventListener('click', e=>{
 });
 
 /* =================== Navegação (Direction-aware transition) =================== */
-const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vRpg:'Aventura de Luísa'};
-const ORD = ['vHome','vMem','vPuz','vDif','vAte','vRpg'];
+const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vRpg:'Aventura de Luísa'};
+const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vRpg'];
 let atual='vHome';
 function irPara(id){
   if(id===atual) return;
@@ -508,6 +624,8 @@ function irPara(id){
   if(id==='vPuz') novoPuzzle(true);
   if(id==='vDif') novoDif();
   if(id==='vAte') novoAtelie(true);
+  if(id==='vPal') novaRodadaPal();
+  if(id==='vNum') novaRodadaNum();
   if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{beep(740,.09);irPara(b.dataset.go)}));
@@ -807,7 +925,264 @@ function salvarArte(){
 }
 document.getElementById('saveFecha').addEventListener('click',()=>document.getElementById('saveWrap').classList.remove('on'));
 
-/* =================== 5) AVENTURA (RPG) =================== */
+/* =================== 5) MONTA A PALAVRA =================== */
+/* Pista em emoji, letras embaralhadas, toque para montar. Errar não pune:
+   as letras voltam para o banco e ela tenta de novo. */
+const PAL_BANCO = {
+  /* Regra da pista: o emoji tem que ter UM nome óbvio para uma criança de 7 anos.
+     🏞️ (rio) sai — parece foto emoldurada. 🧸 é urso, não boneca.
+     🧒 não serve para TOBIAS: ela leria "menino". */
+  3:[['SOL','☀️'],['LUA','🌙'],['MAR','🌊'],['OVO','🥚'],['UVA','🍇'],
+     ['MEL','🍯'],['BOI','🐂']],
+  4:[['BOLA','⚽'],['GATO','🐱'],['CASA','🏠'],['BOLO','🎂'],['PATO','🦆'],
+     ['SINO','🔔'],['FLOR','🌸'],['MEIA','🧦'],['RATO','🐭'],['SAPO','🐸'],
+     ['URSO','🧸'],['VOVÓ','👵']],
+  6:[['PEIXE','🐟'],['LIVRO','📖'],['CAVALO','🐴'],['GIRAFA','🦒'],['MACACO','🐵'],
+     ['PIPOCA','🍿'],['TOMATE','🍅'],['BANANA','🍌'],['ABELHA','🐝'],['LUÍSA','',true]]
+};
+const PAL_EXTRAS = 'ABCDEFGILMNOPRSTUV';
+const PAL_POR_RODADA = 6;
+
+let palNivel=3, palFila=[], palIdx=0, palAcertos=0;
+let palAlvo='', palSlots=[], palErros=0;
+
+document.querySelectorAll('#palChips .chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#palChips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); palNivel=+c.dataset.n; beep(700,.08); novaRodadaPal();
+}));
+document.getElementById('palNovo').addEventListener('click',()=>{beep(700,.08);novaRodadaPal()});
+document.getElementById('palDica').addEventListener('click',()=>{beep(880,.09);dicaPal()});
+
+function novaRodadaPal(){
+  palFila = shuffle([...PAL_BANCO[palNivel]]).slice(0, PAL_POR_RODADA);
+  palIdx=0; palAcertos=0;
+  document.getElementById('palAcertos').textContent='0';
+  montarPalavra();
+}
+
+function montarPalavra(){
+  const [palavra, emoji, ehFoto] = palFila[palIdx];
+  palAlvo = palavra;
+  palSlots = Array(palavra.length).fill(null);
+  palErros = 0;
+  document.getElementById('palN').textContent = palIdx+1;
+
+  const pista = document.getElementById('palPista');
+  pista.className = 'palPista' + (ehFoto?' foto':'');
+  if(ehFoto){
+    pista.style.backgroundImage = `url('${IMGS[Math.floor(Math.random()*IMGS.length)]}')`;
+    pista.textContent = '';
+  } else {
+    pista.style.backgroundImage = '';
+    pista.textContent = emoji;
+  }
+  pista.setAttribute('aria-label', 'Pista da palavra');
+
+  // banco = letras da palavra + distratoras conforme o nível
+  const extras = palNivel===3 ? 0 : palNivel===4 ? 2 : 3;
+  const letras = palavra.split('');
+  const pool = PAL_EXTRAS.split('').filter(l=>!palavra.includes(l));
+  for(let i=0;i<extras;i++) letras.push(pool[Math.floor(Math.random()*pool.length)]);
+  desenharPal(shuffle(letras));
+}
+
+function desenharPal(letras){
+  const slots=document.getElementById('palSlots'), banco=document.getElementById('palBanco');
+  slots.className='palSlots'; slots.innerHTML='';
+  palSlots.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='palSlot'; d.dataset.i=i;
+    d.addEventListener('click',()=>tirarLetra(i));
+    slots.appendChild(d);
+  });
+  banco.innerHTML='';
+  letras.forEach((l,i)=>{
+    const b=document.createElement('button');
+    b.className='palLetra'; b.textContent=l; b.style.setProperty('--i',i);
+    b.setAttribute('aria-label','Letra '+l);
+    b.addEventListener('click',()=>porLetra(b,l));
+    banco.appendChild(b);
+  });
+}
+
+function porLetra(botao, letra){
+  const vaga = palSlots.indexOf(null);
+  if(vaga<0) return;
+  palSlots[vaga] = {letra, botao};
+  botao.classList.add('usada');
+  const s = document.querySelector(`.palSlot[data-i="${vaga}"]`);
+  s.textContent = letra; s.classList.add('cheio');
+  sFlip();
+  if(!palSlots.includes(null)) setTimeout(conferirPal, 260);
+}
+
+function tirarLetra(i){
+  const it = palSlots[i];
+  if(!it || it.travado) return;
+  it.botao.classList.remove('usada');
+  palSlots[i]=null;
+  const s=document.querySelector(`.palSlot[data-i="${i}"]`);
+  s.textContent=''; s.classList.remove('cheio');
+  beep(420,.07);
+}
+
+function conferirPal(){
+  const montada = palSlots.map(s=>s.letra).join('');
+  const slots = document.getElementById('palSlots');
+  if(montada === palAlvo){
+    slots.classList.add('ok');
+    sOk(); confete(60);
+    palAcertos++; document.getElementById('palAcertos').textContent=palAcertos;
+    setTimeout(()=>{
+      palIdx++;
+      if(palIdx >= palFila.length){
+        vencer('🔤','Você montou todas!',
+          `Acertou ${palAcertos} de ${palFila.length} palavras.`, novaRodadaPal);
+      } else montarPalavra();
+    }, 950);
+  } else {
+    palErros++;
+    slots.classList.add('erro'); sNo();
+    setTimeout(()=>{
+      slots.classList.remove('erro');
+      palSlots.forEach((it,i)=>{ if(it && !it.travado) tirarLetra(i); });
+      if(palErros>=2) dicaPal();
+    }, 460);
+  }
+}
+
+/* A dica trava a próxima letra certa no lugar. Sem limite: ela nunca fica presa. */
+function dicaPal(){
+  const i = palSlots.findIndex((s,idx)=>!s || s.letra!==palAlvo[idx]);
+  if(i<0) return;
+  if(palSlots[i]) tirarLetra(i);
+  const certa = palAlvo[i];
+  const botao = [...document.querySelectorAll('#palBanco .palLetra')]
+    .find(b=>b.textContent===certa && !b.classList.contains('usada'));
+  if(!botao) return;
+  botao.classList.add('usada');
+  palSlots[i] = {letra:certa, botao, travado:true};
+  const s=document.querySelector(`.palSlot[data-i="${i}"]`);
+  s.textContent=certa; s.classList.add('cheio','travado');
+  if(!palSlots.includes(null)) setTimeout(conferirPal, 260);
+}
+
+/* =================== 6) CONTA COM A LUÍSA =================== */
+/* Nível 1 conta quantidade, 2 soma até 10, 3 soma e diminui até 20.
+   Toda conta tem apoio visual: objetos para contar ou quadro de dez. */
+const NUM_OBJ = ['🍎','⭐','🐤','🌸','🍓','🐞','🎈','🍪','🐠','🌻'];
+const NUM_POR_RODADA = 8;
+
+let numNivel=1, numIdx=0, numAcertos=0, numResposta=0, numErros=0;
+
+document.querySelectorAll('#numChips .chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#numChips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); numNivel=+c.dataset.n; beep(700,.08); novaRodadaNum();
+}));
+document.getElementById('numNovo').addEventListener('click',()=>{beep(700,.08);novaRodadaNum()});
+
+const rnd = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+function novaRodadaNum(){
+  numIdx=0; numAcertos=0;
+  document.getElementById('numAcertos').textContent='0';
+  novaConta();
+}
+
+function grupo(qtd, obj){
+  return '<div class="grupo">'+Array(qtd).fill('<span>'+obj+'</span>').join('')+'</div>';
+}
+/* Quadro de dez: apoio padrão de alfabetização matemática.
+   'tira' marca o que foi subtraído, para ela ver a conta acontecer. */
+function quadroDez(total, riscar=0){
+  let h='';
+  for(let bloco=0; bloco<Math.max(1,Math.ceil(total/10)); bloco++){
+    h+='<div class="qd">';
+    for(let i=0;i<10;i++){
+      const n = bloco*10+i;
+      const cheio = n < total;
+      const tirado = cheio && n >= total-riscar;
+      h += '<i class="'+(tirado?'tira':cheio?'on':'')+'"></i>';
+    }
+    h+='</div>';
+  }
+  return h;
+}
+
+function novaConta(){
+  numErros=0;
+  document.getElementById('numN').textContent = numIdx+1;
+  const apoio=document.getElementById('numApoio');
+  const perg=document.getElementById('numPergunta');
+  apoio.className='numApoio';
+  const obj = NUM_OBJ[Math.floor(Math.random()*NUM_OBJ.length)];
+
+  if(numNivel===1){
+    const n = rnd(1,10);
+    numResposta = n;
+    perg.textContent = 'Quantos?';
+    apoio.innerHTML = grupo(n, obj);
+  } else if(numNivel===2){
+    const a = rnd(1,6), b = rnd(1,10-a);
+    numResposta = a+b;
+    perg.textContent = `${a} + ${b}`;
+    apoio.innerHTML = grupo(a,obj) + '<span class="sinal">+</span>' + grupo(b,obj);
+  } else {
+    if(Math.random()<.5){
+      const a = rnd(3,14), b = rnd(2,Math.min(6, 20-a));
+      numResposta = a+b;
+      perg.textContent = `${a} + ${b}`;
+      apoio.innerHTML = quadroDez(a) + '<span class="sinal">+</span>' + quadroDez(b);
+    } else {
+      const a = rnd(6,20), b = rnd(2,Math.min(9,a-1));
+      numResposta = a-b;
+      perg.textContent = `${a} − ${b}`;
+      apoio.innerHTML = quadroDez(a, b);
+    }
+  }
+  desenharOpcoes();
+}
+
+function desenharOpcoes(){
+  const opcoes = new Set([numResposta]);
+  while(opcoes.size < 6){
+    const d = numResposta + rnd(-4,4);
+    if(d >= 0 && d !== numResposta) opcoes.add(d);
+  }
+  const box=document.getElementById('numOpcoes'); box.innerHTML='';
+  shuffle([...opcoes]).forEach((v,i)=>{
+    const b=document.createElement('button');
+    b.className='numOpc'; b.textContent=v; b.style.setProperty('--i',i);
+    b.addEventListener('click',()=>responder(b,v));
+    box.appendChild(b);
+  });
+}
+
+function responder(botao, valor){
+  if(valor === numResposta){
+    botao.classList.add('certa');
+    document.querySelectorAll('.numOpc').forEach(b=>b.style.pointerEvents='none');
+    sOk(); confete(60);
+    numAcertos++; document.getElementById('numAcertos').textContent=numAcertos;
+    setTimeout(()=>{
+      numIdx++;
+      if(numIdx >= NUM_POR_RODADA){
+        vencer('🔢','Contas prontas!',
+          `Acertou ${numAcertos} de ${NUM_POR_RODADA} contas.`, novaRodadaNum);
+      } else novaConta();
+    }, 900);
+  } else {
+    botao.classList.add('errada'); sNo();
+    numErros++;
+    /* Dois erros: o apoio pulsa para ela contar junto. Nunca some opção certa. */
+    if(numErros>=2){
+      const ap=document.getElementById('numApoio');
+      ap.classList.remove('pisca'); void ap.offsetWidth; ap.classList.add('pisca');
+    }
+  }
+}
+
+/* =================== 7) AVENTURA (RPG) =================== */
 const ATLAS_URL = "data:image/png;base64,__ATLAS__";
 __RPGJS__
 

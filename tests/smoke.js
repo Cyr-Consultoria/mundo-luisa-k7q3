@@ -38,12 +38,13 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   // ---------- 1. Tela de início ----------
   console.log('1) Tela de início');
   checa(await p.locator('#vHome.on').isVisible(), 'Home aparece');
-  checa(await p.locator('[data-go]').count() === 5, 'os 5 jogos estão no menu');
+  checa(await p.locator('[data-go]').count() === 7, 'os 7 jogos estão no menu');
 
-  // ---------- 2. Os 4 jogos simples abrem e o Voltar fecha ----------
-  console.log('\n2) Jogos 1–4 abrem e voltam');
+  // ---------- 2. Os jogos simples abrem e o Voltar fecha ----------
+  console.log('\n2) Jogos 1–6 abrem e voltam');
   for (const [go, nome] of [['vMem', 'Memória'], ['vPuz', 'Quebra-cabeça'],
-                            ['vDif', 'Diferenças'], ['vAte', 'Ateliê']]) {
+                            ['vDif', 'Diferenças'], ['vAte', 'Ateliê'],
+                            ['vPal', 'Monta a Palavra'], ['vNum', 'Conta com a Luísa']]) {
     await p.click(`[data-go="${go}"]`);
     await p.waitForTimeout(450);
     const abriu = await p.locator(`#${go}.on`).isVisible();
@@ -52,6 +53,76 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
     const voltou = await p.locator('#vHome.on').isVisible();
     checa(abriu && voltou, `${nome}: abre e volta`, abriu ? 'não voltou' : 'não abriu');
   }
+
+  // ---------- 2b. Monta a Palavra: joga uma rodada inteira ----------
+  console.log('\n2b) Monta a Palavra — rodada completa nos 3 níveis');
+  for (const [nivel, rotulo] of [['3', 'fácil'], ['4', 'médio'], ['6', 'difícil']]) {
+    await p.click('[data-go="vPal"]');
+    await p.waitForTimeout(400);
+    await p.click(`#palChips .chip[data-n="${nivel}"]`);
+    await p.waitForTimeout(400);
+
+    let palavras = 0;
+    for (let r = 0; r < 6; r++) {
+      // resolve pela dica: ela sempre trava a próxima letra certa
+      for (let k = 0; k < 8; k++) {
+        if (await p.locator('#win.on').isVisible()) break;
+        const vazios = await p.locator('#palSlots .palSlot:not(.cheio)').count();
+        if (vazios === 0) break;
+        await p.click('#palDica');
+        await p.waitForTimeout(140);
+      }
+      await p.waitForTimeout(1100);
+      palavras++;
+      if (await p.locator('#win.on').isVisible()) break;
+    }
+    const ganhou = await p.locator('#win.on').isVisible();
+    const acertos = await p.locator('#palAcertos').textContent();
+    checa(ganhou && acertos === '6', `palavras ${rotulo}: 6 palavras montadas`,
+          ganhou ? `acertou ${acertos}` : `travou na palavra ${palavras}`);
+    await p.click('#winHome');
+    await p.waitForTimeout(450);
+  }
+
+  // ---------- 2c. Conta com a Luísa: joga uma rodada inteira ----------
+  console.log('\n2c) Conta com a Luísa — rodada completa nos 3 níveis');
+  for (const [nivel, rotulo] of [['1', 'contar'], ['2', 'até 10'], ['3', 'até 20']]) {
+    await p.click('[data-go="vNum"]');
+    await p.waitForTimeout(400);
+    await p.click(`#numChips .chip[data-n="${nivel}"]`);
+    await p.waitForTimeout(400);
+
+    let ok = true;
+    for (let q = 0; q < 8; q++) {
+      if (await p.locator('#win.on').isVisible()) break;
+      // a resposta certa é a única que bate com a pergunta — calcula pelo enunciado
+      const alvo = await p.evaluate(() => numResposta);
+      const botao = p.locator('.numOpc', { hasText: new RegExp(`^${alvo}$`) }).first();
+      if (await botao.count() === 0) { ok = false; break; }
+      await botao.click();
+      await p.waitForTimeout(1050);
+    }
+    const ganhou = await p.locator('#win.on').isVisible();
+    const acertos = await p.locator('#numAcertos').textContent();
+    checa(ok && ganhou && acertos === '8', `números ${rotulo}: 8 contas certas`,
+          ganhou ? `acertou ${acertos}` : 'não chegou ao fim');
+    await p.click('#winHome');
+    await p.waitForTimeout(450);
+  }
+
+  // ---------- 2d. Errar não pune ----------
+  console.log('\n2d) Errar não trava nem pune');
+  await p.click('[data-go="vNum"]');
+  await p.waitForTimeout(450);
+  const errado = await p.evaluate(() => {
+    const b = [...document.querySelectorAll('.numOpc')].find(x => +x.textContent !== numResposta);
+    b.click();
+    return { certaAindaExiste: [...document.querySelectorAll('.numOpc')]
+      .some(x => +x.textContent === numResposta && x.style.pointerEvents !== 'none') };
+  });
+  checa(errado.certaAindaExiste, 'erro no jogo de números não tira a opção certa');
+  await p.click('#btnBack');
+  await p.waitForTimeout(400);
 
   // ---------- 3. RPG: os 5 capítulos concluem ----------
   console.log('\n3) Aventura — 5 capítulos de ponta a ponta');

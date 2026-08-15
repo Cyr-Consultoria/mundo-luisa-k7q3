@@ -25,7 +25,23 @@ runtime. Só um script Python costura os pedaços.
 | 2 | Quebra-cabeça | deslizante 3×3 e 4×4 sobre uma foto |
 | 3 | Ache as Diferenças | adesivos sorteados sobre a foto · 3/5/7 |
 | 4 | Ateliê de Adesivos | canvas com adesivos arrastáveis, exporta PNG |
-| 5 | Aventura de Luísa | RPG top-down 16-bit, 5 capítulos, 3 dificuldades |
+| 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 3 / 4 / 5–6 letras |
+| 6 | Conta com a Luísa | contar · somar até 10 · somar e diminuir até 20 |
+| 7 | Aventura de Luísa | RPG top-down 16-bit, 5 capítulos, 3 dificuldades |
+
+**Regra dos jogos 5 e 6** (calibrados com o Cyr em 2026-08-15: ela lê palavra curta
+sozinha; em conta vai de contar até 10 a somar e subtrair até 20):
+
+- **Errar não pune e não tira opção.** No jogo de palavras as letras voltam para o
+  banco; no de números o botão errado apaga mas o certo continua lá.
+- **Dois erros acionam ajuda sozinha** — a dica trava uma letra certa, ou o apoio
+  visual pulsa para ela contar junto. Ela nunca fica presa numa tela.
+- **O botão 💡 Dica não tem limite.** Trava sempre a próxima letra certa no lugar.
+- **Pista de palavra precisa de nome óbvio.** Já mordeu: 🏞️ para RIO parece foto
+  emoldurada; 🧸 é urso, não boneca; 🧒 para TOBIAS ela lê "menino". Emoji ambíguo
+  fora — a única exceção é LUÍSA, cuja pista é uma foto dela.
+- **Toda conta tem apoio visual**: objetos para contar, ou quadro de dez com o que
+  foi subtraído riscado.
 
 **Destinatária:** Luísa, 7 anos, joga sozinha num iPad. Não lê texto longo.
 Nunca pode ficar travada sem saber o que fazer. Não existe "game over".
@@ -48,7 +64,7 @@ mundo-luisa-k7q3/
 ├── tests/
 │   └── smoke.js                 checklist de entrega em Playwright
 └── src/
-    ├── app_template.html   casca: HTML, CSS e JS dos jogos 1–4  (43 KB)
+    ├── app_template.html   casca: HTML, CSS e JS dos jogos 1–6  (55 KB)
     ├── rpg_block.js        motor do RPG + os 5 capítulos        (50 KB)
     ├── atlas.png           4 KB · 16 personagens (16×24) + 39 tiles (16×16)
     ├── icon.png            ícone da Tela de Início              ⟳ virou arquivo
@@ -278,14 +294,20 @@ node tests/smoke.js --prod   # a URL de produção
 
 O script cobre o checklist mínimo e sai com código 1 se qualquer item falhar:
 
-1. Home aparece com os 5 jogos.
-2. Os jogos 1–4 abrem e o Voltar fecha.
-3. Os 5 capítulos concluem de ponta a ponta (via `RPG._feito`).
-4. As 3 dificuldades iniciam.
-5. Sair da Aventura volta ao menu de capítulos.
-6. Sem `overflow-x` a 375, 820 e 1024 px.
-7. Nenhum botão visível abaixo de 44 px de altura.
-8. Zero `pageerror` e zero `console.error`.
+1. Home aparece com os 7 jogos.
+2. Os jogos 1–6 abrem e o Voltar fecha.
+3. Monta a Palavra: rodada de 6 palavras completa nos 3 níveis.
+4. Conta com a Luísa: rodada de 8 contas completa nos 3 níveis.
+5. Errar no jogo de números não remove a opção certa.
+6. Os 5 capítulos concluem de ponta a ponta (via `RPG._feito`).
+7. As 3 dificuldades iniciam.
+8. Sair da Aventura volta ao menu de capítulos.
+9. Sem `overflow-x` a 375, 820 e 1024 px.
+10. Nenhum botão visível abaixo de 44 px de altura.
+11. Zero `pageerror` e zero `console.error`.
+
+Hoje são **31 verificações**. `palAlvo` e `numResposta` são globais de propósito —
+é por elas que o teste sabe a resposta certa sem adivinhar.
 
 Salva `tests/ultimo-teste.png` para conferência visual.
 
@@ -297,9 +319,33 @@ em `iniciar()`).
 
 ## 9. Estado atual e o que ficou de fora
 
-**Pronto e publicado:** 4 jogos simples + RPG com 5 capítulos + 3 dificuldades + save +
+**Pronto e publicado:** 6 jogos simples + RPG com 5 capítulos + 3 dificuldades + save +
 progressão travada por capítulo + avanço automático para o capítulo seguinte.
-Rebuild local confere byte a byte com produção.
+
+**Aprovado e não feito ainda — segunda aventura, capítulos 6 a 10.**
+O capítulo 5 fecha o arco das Quatro Cores (a Luísa abraça a Sombra), então 6–10 é
+aventura nova: *"Luísa e o Mapa que Faltava"* — Aurora recuperou as cores mas está
+perdendo os nomes e as contas.
+
+| # | Capítulo | Cenário | Mecânica | Custo |
+|---|---|---|---|---|
+| 6 | Porto das Letras | areia, ponte, água | `palavra` nova · `pegar` | ação nova no motor |
+| 7 | Feira dos Números | vila, telhados | `numero` nova · `escolha` | ação nova no motor |
+| 8 | Caverna dos Ecos | montanha + `escuro:true` | `sequencia` + `palavra` | **zero motor** |
+| 9 | Jardim da Vovó | grama, flor | `deslizante` + `escolha` | **zero motor** |
+| 10 | Torre do Relógio | castelo + `T.cristal` | `numero` + final novo | final novo |
+
+Notas de planejamento:
+
+- Os mini-jogos dos jogos 5 e 6 já existem; virar `acao` de meta é envelopá-los,
+  como o `deslizante` já faz no capítulo 3.
+- `T.cristal` (índice 38) está desenhado no atlas e **nunca foi usado em mapa**.
+  O capítulo 10 é o destino dele.
+- A Sombra vira companheira: sprite (índice 14) e falas já existem.
+- O save **não precisa subir para `_v3`** — a estrutura não muda, só entram mais
+  ids em `done`.
+- Não existe `AVENTURAS` no código. Agrupar os capítulos em duas aventuras
+  separadas no menu é trabalho novo; hoje `montarMenu()` só itera `CAPS`.
 
 **Não feito** (nada disso foi pedido — não faça sem o Cyr pedir):
 
