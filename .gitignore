@@ -1,0 +1,4 @@
+node_modules/
+package-lock.json
+tests/ultimo-teste.png
+.DS_Store
