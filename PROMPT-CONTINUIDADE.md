@@ -15,7 +15,7 @@
 
 ## 1. O que é
 
-Aplicação web com 5 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
+Aplicação web com 7 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
 Arquivo único, sem servidor de aplicação, sem framework, sem dependência externa em
 runtime. Só um script Python costura os pedaços.
 
