@@ -25,12 +25,34 @@ runtime. Só um script Python costura os pedaços.
 | 2 | Quebra-cabeça | deslizante 3×3 e 4×4 sobre uma foto |
 | 3 | Ache as Diferenças | adesivos sorteados sobre a foto · 3/5/7 |
 | 4 | Ateliê de Adesivos | canvas com adesivos arrastáveis, exporta PNG |
-| 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 3 / 4 / 5–6 letras |
-| 6 | Conta com a Luísa | contar · somar até 10 · somar e diminuir até 20 |
+| 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 4–5 / 6 / 7–9 letras |
+| 6 | Conta com a Luísa | até 20 · dezenas até 100 e parcela que falta · vezes, dobro e metade |
 | 7 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
 
-**Regra dos jogos 5 e 6** (calibrados com o Cyr em 2026-08-15: ela lê palavra curta
-sozinha; em conta vai de contar até 10 a somar e subtrair até 20):
+**Regra dos jogos 5 e 6.** Calibragem revista em 2026-08-19: a primeira versão
+ficou em nível de 5 anos, não de 7. Hoje a régua é **2º ano**:
+
+| Nível | Palavra | Conta |
+|---|---|---|
+| Fácil | 4 e 5 letras | somar e subtrair até 20 |
+| Médio | 6 letras | dezenas até 100 · parcela que falta |
+| Difícil | 7 a 9 letras, com dígrafo | vezes como soma repetida · dobro · metade |
+
+O que define o nível da palavra não é só o tamanho: é o **dígrafo** (ch, lh, nh,
+rr, ss, gu) e o **encontro consonantal** (br, cr, tr, pl, gr) — é ali que a
+criança de 7 anos tropeça. Distratoras no banco: 2, 3 e 4 por nível.
+
+Travas de calibragem que já mordi:
+
+- **Parcela que falta tem total preso em 20.** Com total 29 a resposta vira 23,
+  que é conta de cabeça de 3º/4º ano.
+- **Risco vermelho é subtração, casa vazia é parcela que falta.** São duas ideias
+  diferentes; `quadroDez(total, riscar, capacidade)` separa as duas.
+- **9 letras não cabem em 375px com slot de 52px.** `.longo`/`.xlongo` encolhem o
+  slot; o banco de letras **não** encolhe, porque é ele o alvo de toque. Para
+  apagar existe o botão ↩️, de 44px.
+
+Outras regras que continuam valendo:
 
 - **Errar não pune e não tira opção.** No jogo de palavras as letras voltam para o
   banco; no de números o botão errado apaga mas o certo continua lá.
@@ -40,8 +62,11 @@ sozinha; em conta vai de contar até 10 a somar e subtrair até 20):
 - **Pista de palavra precisa de nome óbvio.** Já mordeu: 🏞️ para RIO parece foto
   emoldurada; 🧸 é urso, não boneca; 🧒 para TOBIAS ela lê "menino". Emoji ambíguo
   fora — a única exceção é LUÍSA, cuja pista é uma foto dela.
-- **Toda conta tem apoio visual**: objetos para contar, ou quadro de dez com o que
-  foi subtraído riscado.
+- **Toda conta tem apoio visual**: quadro de dez até 20, material dourado (barra
+  de 10 + unidade) até 100, e grupos de objetos para as vezes.
+- **`montaConta(nivel)` e `opcoesPara(resp)` são fonte única** — o jogo do menu e
+  as metas `numero` do RPG chamam as mesmas funções. Estavam duplicados e
+  duplicata diverge.
 
 **Destinatária:** Luísa, 7 anos, joga sozinha num iPad. Não lê texto longo.
 Nunca pode ficar travada sem saber o que fazer. Não existe "game over".

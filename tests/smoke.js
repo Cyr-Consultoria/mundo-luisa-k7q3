@@ -156,7 +156,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
 
   // ---------- 2b. Monta a Palavra: joga uma rodada inteira ----------
   console.log('\n2b) Monta a Palavra — rodada completa nos 3 níveis');
-  for (const [nivel, rotulo] of [['3', 'fácil'], ['4', 'médio'], ['6', 'difícil']]) {
+  for (const [nivel, rotulo] of [['1', 'fácil'], ['2', 'médio'], ['3', 'difícil']]) {
     await p.click('[data-go="vPal"]');
     await p.waitForTimeout(400);
     await p.click(`#palChips .chip[data-n="${nivel}"]`);
@@ -165,7 +165,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
     let palavras = 0;
     for (let r = 0; r < 6; r++) {
       // resolve pela dica: ela sempre trava a próxima letra certa
-      for (let k = 0; k < 8; k++) {
+      for (let k = 0; k < 14; k++) {      // palavra difícil chega a 9 letras
         if (await p.locator('#win.on').isVisible()) break;
         const vazios = await p.locator('#palSlots .palSlot:not(.cheio)').count();
         if (vazios === 0) break;
@@ -186,7 +186,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
 
   // ---------- 2c. Conta com a Luísa: joga uma rodada inteira ----------
   console.log('\n2c) Conta com a Luísa — rodada completa nos 3 níveis');
-  for (const [nivel, rotulo] of [['1', 'contar'], ['2', 'até 10'], ['3', 'até 20']]) {
+  for (const [nivel, rotulo] of [['1', 'até 20'], ['2', 'até 100'], ['3', 'vezes']]) {
     await p.click('[data-go="vNum"]');
     await p.waitForTimeout(400);
     await p.click(`#numChips .chip[data-n="${nivel}"]`);

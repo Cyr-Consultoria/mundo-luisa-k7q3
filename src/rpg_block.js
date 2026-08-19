@@ -325,15 +325,15 @@ const RPG = (() => {
     entregaTxt:'Leve o nome de volta pra porta do farol',
     metas:[
       {id:'mar', nome:'a palavra do mar', icone:'🌊', x:9,y:4, tile:T.brilho, acao:'palavra',
-       cfg:{nivel:3}, dica:'Vá até a ponta do píer, lá em cima, e aperte A.',
+       cfg:{nivel:1}, dica:'Vá até a ponta do píer, lá em cima, e aperte A.',
        antes:'Tem uma palavra boiando aqui. Falta juntar as letras.',
        fala:'Essa eu devolvi pro mar.'},
       {id:'areia', nome:'a palavra da areia', icone:'🐚', x:15,y:11, tile:T.brilho, acao:'palavra',
-       cfg:{nivel:4}, dica:'Está na areia, à direita de onde você começou.',
+       cfg:{nivel:2}, dica:'Está na areia, à direita de onde você começou.',
        antes:'Alguém escreveu na areia e a onda embaralhou.',
        fala:'Consertei antes da próxima onda.'},
       {id:'nome', nome:'o nome do farol', icone:'💡', x:5,y:10, tile:T.estrela, acao:'palavra',
-       cfg:{nivel:6}, exigeTudo:true,
+       cfg:{nivel:3}, exigeTudo:true,
        dica:'Fique na frente da porta do farol e aperte A.',
        antes:'Agora o nome dele. Esse é o mais comprido.',
        fala:'O farol tem nome de novo!'}
@@ -455,7 +455,7 @@ const RPG = (() => {
        antes:'Esse repete mais coisa. Calma.',
        fala:'Segundo eco aceso.'},
       {id:'guardada', nome:'a palavra guardada', icone:'📢', x:9,y:8, tile:T.estrela, acao:'palavra',
-       cfg:{nivel:6}, exigeTudo:true,
+       cfg:{nivel:3}, exigeTudo:true,
        dica:'No meio da caverna, entre os dois corredores.',
        antes:'Com os dois ecos acesos dá pra ouvir o que ficou guardado aqui.',
        fala:'A caverna disse de volta!'}
@@ -894,9 +894,10 @@ const RPG = (() => {
   /* Monta a Palavra dentro do capítulo. Reusa PAL_BANCO e PAL_EXTRAS dos jogos
      do menu — mesma lista, mesma regra de pista. Sair nunca pune: volta ao mapa. */
   function jogoPalavra(meta,cb){
-    const nivel = (meta.cfg&&meta.cfg.nivel) || 4;
+    const nivel = (meta.cfg&&meta.cfg.nivel) || 2;
     const [palavra, emoji, ehFoto] = PAL_BANCO[nivel][Math.floor(Math.random()*PAL_BANCO[nivel].length)];
-    const extras = D().baloes ? (nivel===3?0:nivel===4?2:3) : (nivel===3?2:nivel===4?3:4);
+    /* No difícil do RPG entram 2 distratoras a mais que no jogo do menu. */
+    const extras = PAL_EXTRAS_N[nivel] + (D().baloes ? 0 : 2);
     const letras = palavra.split('');
     const pool = PAL_EXTRAS.split('').filter(l=>!palavra.includes(l));
     for(let i=0;i<extras;i++) letras.push(pool[Math.floor(Math.random()*pool.length)]);
@@ -984,23 +985,12 @@ const RPG = (() => {
 
     function nova(){
       erros=0; apoio.className='numApoio';
-      const obj=NUM_OBJ[Math.floor(Math.random()*NUM_OBJ.length)];
-      if(nivel===1){
-        const n=rnd(1,10); resp=n; perg.textContent='Quantos?'; apoio.innerHTML=grupo(n,obj);
-      } else if(nivel===2){
-        const a=rnd(1,6), b=rnd(1,10-a); resp=a+b; perg.textContent=a+' + '+b;
-        apoio.innerHTML=grupo(a,obj)+'<span class="sinal">+</span>'+grupo(b,obj);
-      } else if(Math.random()<.5){
-        const a=rnd(3,14), b=rnd(2,Math.min(6,20-a)); resp=a+b; perg.textContent=a+' + '+b;
-        apoio.innerHTML=quadroDez(a)+'<span class="sinal">+</span>'+quadroDez(b);
-      } else {
-        const a=rnd(6,20), b=rnd(2,Math.min(9,a-1)); resp=a-b; perg.textContent=a+' − '+b;
-        apoio.innerHTML=quadroDez(a,b);
-      }
-      const set=new Set([resp]);
-      while(set.size<6){ const d=resp+rnd(-4,4); if(d>=0&&d!==resp) set.add(d); }
+      const c = montaConta(nivel);          /* mesmo gerador do jogo do menu */
+      resp = c.resp;
+      perg.textContent = c.perg;
+      apoio.innerHTML = c.apoio;
       opc.innerHTML='';
-      shuffle([...set]).forEach((v,i)=>{
+      opcoesPara(resp).forEach((v,i)=>{
         const b=document.createElement('button');
         b.className='numOpc'; b.textContent=v; b.style.setProperty('--i',i);
         b.addEventListener('click',()=>responder(b,v));
