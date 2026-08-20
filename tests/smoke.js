@@ -28,7 +28,19 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 400, height: 1000 }, deviceScaleFactor: 2 });
   p.on('pageerror', e => erros.push('pageerror: ' + e.message));
-  p.on('console', m => { if (m.type() === 'error') erros.push('console.error: ' + m.text()); });
+/* Ruído do ambiente, não do app: o Chromium headless não tem placa de som e às
+   vezes reclama do renderizador WebAudio. Aparece de forma intermitente e travava
+   o publicar.sh sem nada estar quebrado. O filtro é exato de propósito — qualquer
+   outro erro de áudio continua reprovando. */
+const RUIDO_DE_AMBIENTE = [
+  'The AudioContext encountered an error from the audio device or the WebAudio renderer'
+];
+  p.on('console', m => {
+    if (m.type() !== 'error') return;
+    const t = m.text();
+    if (RUIDO_DE_AMBIENTE.some(r => t.includes(r))) return;
+    erros.push('console.error: ' + t);
+  });
 
   await p.goto(ALVO, { waitUntil: 'load' });
   await p.evaluate(() => localStorage.clear());
