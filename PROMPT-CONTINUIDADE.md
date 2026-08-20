@@ -536,6 +536,43 @@ Decisões desta leva, para não refazer discussão:
   Agrupar de verdade continua sendo trabalho novo.
 - O capítulo 10 não tem `entrega`: a última meta conclui o capítulo direto.
 
+### Inglês — avaliado em 2026-08-20, aprovado como viável, NÃO construído
+
+O Cyr perguntou o que dava para fazer e decidiu não construir agora. Fica aqui
+para não refazer a análise.
+
+**O que destrava:** `speechSynthesis`, a síntese de voz embutida no iOS. Zero
+bytes no arquivo, nenhum download, nenhuma dependência externa — cabe na regra do
+projeto. Confirmei que a **API** existe e é chamável; **não** confirmei a voz (o
+Chromium headless daqui não tem voz instalada). Antes de construir qualquer coisa,
+testar no iPad dela se existe voz `en-US` e se a pronúncia presta. É teste de 10
+segundos e é bloqueante.
+
+**Nível dela (informado pelo Cyr):** já lê palavra em inglês — CAT, DOG, HOUSE —
+por escola bilíngue ou reforço. Isso **inverte** a trilha padrão: para quem começa
+do zero a ordem é escuta → ligação → escrita, mas para ela a escrita já é acessível
+e a escuta vira revisão e pronúncia.
+
+Trilha recomendada **para o nível dela**, do mais barato ao mais caro:
+
+| Ordem | Jogo | Custo | Por quê nesta posição |
+|---|---|---|---|
+| 1 | Monta a Palavra em inglês | mínimo | é o jogo 5 com outro banco; ela já lê |
+| 2 | Acende a Palavra em inglês | mínimo | é o jogo 8 com outro banco |
+| 3 | Ouça e Ache | pequeno | vira revisão e pronúncia, não introdução |
+| 4 | Par de Palavras PT↔EN | pequeno | mecânica da Memória |
+| 5 | NPC que fala inglês na Aventura | médio | leitura em contexto |
+
+**O vocabulário já está pago.** As 45 palavras do `PAL_BANCO` têm pista visual
+inequívoca e quase todas viram palavra de iniciante direto: CAT, DOG, HOUSE, BALL,
+FISH, BOOK, HORSE, MONKEY, BANANA, BEE, RABBIT, SPIDER, WINDOW, SCHOOL, ELEPHANT,
+STRAWBERRY, PINEAPPLE, BICYCLE, ROCKET, CASTLE, GUITAR, PENGUIN, TURTLE, STAR,
+CLOUD, TRAIN. Só LUÍSA (nome próprio) e VOVÓ ficam de fora.
+
+**Não usar reconhecimento de fala.** A API existe, mas no Safari do iPad é instável
+e some quando o app roda em tela cheia pela Tela de Início — que é exatamente como
+ela usa. Prometeria uma coisa que quebra na mão dela.
+
 **Não feito** (nada disso foi pedido — não faça sem o Cyr pedir):
 
 - Trilha sonora; hoje só há efeitos sintetizados por Web Audio, sem arquivos
