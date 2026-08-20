@@ -15,7 +15,7 @@
 
 ## 1. O que é
 
-Aplicação web com 8 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
+Aplicação web com 9 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
 Arquivo único, sem servidor de aplicação, sem framework, sem dependência externa em
 runtime. Só um script Python costura os pedaços.
 
@@ -28,7 +28,8 @@ runtime. Só um script Python costura os pedaços.
 | 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 4–5 / 6 / 7–9 letras |
 | 6 | Conta com a Luísa | até 20 · dezenas até 100 e parcela que falta · vezes, dobro e metade |
 | 7 | Adivinha Quem | dedução por eliminação · 12 / 18 / 24 rostos |
-| 8 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
+| 8 | Acende a Palavra | forca · vaga-lumes · **o único jogo com game over** · 4–5 / 6 / 7–9 letras |
+| 9 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
 
 **Regra dos jogos 5 e 6.** Calibragem revista em 2026-08-19: a primeira versão
 ficou em nível de 5 anos, não de 7. Hoje a régua é **2º ano**:
@@ -68,6 +69,9 @@ Outras regras que continuam valendo:
 - **Token de cor não pode se auto-referenciar.** Uma substituição global de hex
   por token acertou a própria definição e gerou `--nao:var(--nao)`, que deixou o
   ✕ e o risco de subtração sem cor **na versão publicada**. Hoje o teste cobra.
+- **`comAtlas(cb)` é o carregador único do atlas** — a abertura e o Acende a
+  Palavra desenham do mesmo `Image`. É `function` de propósito: quem chama
+  aparece antes dela no arquivo, e declaração de função sobe.
 - **`montaConta(nivel)` e `opcoesPara(resp)` são fonte única** — o jogo do menu e
   as metas `numero` do RPG chamam as mesmas funções. Estavam duplicados e
   duplicata diverge.
@@ -93,9 +97,42 @@ está numa URL pública. Solo: o app guarda o rosto secreto, ela pergunta e derr
 - Combinações são sempre distintas: dois rostos iguais tornariam a rodada
   insolúvel.
 
+**Regra do jogo 8 (Acende a Palavra).** É a forca. A habilidade que vale aqui é
+**recall** — lembrar quais letras existem na palavra —, diferente do Monta a
+Palavra, que é reconhecimento entre letras já dadas.
+
+> ⚠️ **Este é o ÚNICO jogo do app com game over, e é de propósito.**
+> Eu tinha construído sem derrota, com uma lanterna que resgatava e revelava uma
+> letra quando os vaga-lumes acabavam. O Cyr reverteu em 2026-08-20: *"forca
+> precisa ter game over"*. Ele tem razão sobre a mecânica — sem risco de perder,
+> a forca vira só tocar todas as letras do alfabeto até a palavra aparecer.
+> **Não "conserte" isto de volta.** A regra geral do app (§ Destinatária)
+> continua valendo em todos os outros oito jogos.
+
+- Vaga-lumes por nível: 6 / 5 / 4. Acabaram, acabou a partida.
+- **A palavra é revelada no fim de jogo**, com as letras que ela não achou
+  marcadas em vermelho (`.palSlot.perdida`). Perder sem descobrir a resposta não
+  ensina nada.
+- `perder()` é irmão de `vencer()`: mesmo overlay, sem confete e sem fanfarra,
+  e o botão vira "Tentar de novo".
+- **Teclado sem acento.** Tocar `I` revela `Í`, tocar `O` revela `Ó`. Ela está
+  aprendendo a letra, não a regra de acentuação, e um teclado com Á É Í Ó Ú
+  dobraria de tamanho. A comparação usa `semAcento()` (normalize NFD).
+- O tile do vaga-lume traz o chão de floresta junto; recortado em círculo vira
+  ficha de luz. Solto sobre o creme virava um quadrado escuro.
+
 **Destinatária:** Luísa, 7 anos, joga sozinha num iPad. Não lê texto longo.
 Nunca pode ficar travada sem saber o que fazer. Não existe "game over".
 Ela é sempre a heroína — ninguém a resgata.
+
+**A dificuldade é escolha DELA.** Decisão do Cyr em 2026-08-20. Nenhum jogo pode
+subir ou descer de nível sozinho, nem "adaptar" com base em acerto ou erro. Os
+chips de nível existem para ela escolher, e é só isso que muda o nível. Ajuda
+dentro de uma rodada (dica, apoio visual pulsando) não é dificuldade adaptativa
+e continua valendo.
+
+**"Não existe game over" tem uma exceção: o Acende a Palavra.** Ver a regra do
+jogo 8. Nos outros oito jogos a regra é absoluta.
 
 ---
 
@@ -446,7 +483,7 @@ O script cobre o checklist mínimo e sai com código 1 se qualquer item falhar:
 14. Nenhum botão visível abaixo de 44 px de altura.
 15. Zero `pageerror` e zero `console.error`.
 
-Hoje são **54 verificações**. `palAlvo` e `numResposta` são globais de propósito —
+Hoje são **75 verificações**. `palAlvo` e `numResposta` são globais de propósito —
 é por elas que o teste sabe a resposta certa sem adivinhar.
 
 Duas armadilhas que já custaram tempo ao escrever teste aqui:

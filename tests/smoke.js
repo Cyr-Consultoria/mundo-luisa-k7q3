@@ -75,7 +75,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   // ---------- 1. Tela de início ----------
   console.log('\n1) Tela de início');
   checa(await p.locator('#vHome.on').isVisible(), 'Home aparece');
-  checa(await p.locator('[data-go]').count() === 8, 'os 8 jogos estão no menu');
+  checa(await p.locator('[data-go]').count() === 9, 'os 9 jogos estão no menu');
 
   // ---------- 1a. Beat de confirmação da escolha ----------
   // Falhou em silêncio uma vez: `animation:cardIn ... both` mantinha os valores do
@@ -113,7 +113,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
       return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     const out = [];
     // conteúdo: tinta escura sobre os 7 gradientes (texto de 12,5px → 4,5)
-    for (let i = 1; i <= 8; i++)
+    for (let i = 1; i <= 9; i++)
       for (const lado of ['a', 'b'])
         out.push({ o: `cartão j${i}${lado}`, v: r(tk('--tx-cartao'), tk(`--g${i}${lado}`)), min: 4.5 });
     // controle: branco sobre cor funda (chip ativo, botão .pri, botão A)
@@ -160,11 +160,11 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
         'faltando: ' + midia.join(', '));
 
   // ---------- 2. Os jogos simples abrem e o Voltar fecha ----------
-  console.log('\n2) Jogos 1–7 abrem e voltam');
+  console.log('\n2) Jogos 1–8 abrem e voltam');
   for (const [go, nome] of [['vMem', 'Memória'], ['vPuz', 'Quebra-cabeça'],
                             ['vDif', 'Diferenças'], ['vAte', 'Ateliê'],
                             ['vPal', 'Monta a Palavra'], ['vNum', 'Conta com a Luísa'],
-                            ['vAdv', 'Adivinha Quem']]) {
+                            ['vAdv', 'Adivinha Quem'], ['vAce', 'Acende a Palavra']]) {
     await p.click(`[data-go="${go}"]`);
     await p.waitForTimeout(450);
     const abriu = await p.locator(`#${go}.on`).isVisible();
@@ -282,6 +282,70 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
           `sobrou ${r.sobrou}, acertou=${r.acertou}, venceu=${r.venceu}`);
     if (r.venceu) { await p.click('#winHome'); await p.waitForTimeout(450); }
     else { await p.click('#btnBack'); await p.waitForTimeout(450); }
+  }
+
+
+  // ---------- 2f. Acende a Palavra ----------
+  // Único jogo do app COM game over (decisão do Cyr, 2026-08-20).
+  console.log('\n2f) Acende a Palavra — forca com game over');
+  for (const [nivel, rotulo, vagas] of [['1', 'fácil', 6], ['2', 'médio', 5], ['3', 'difícil', 4]]) {
+    await p.click('[data-go="vAce"]');
+    await p.waitForTimeout(450);
+    await p.click(`#aceChips .chip[data-n="${nivel}"]`);
+    await p.waitForTimeout(500);
+    checa(await p.locator('#aceVagas canvas').count() === vagas,
+          `${rotulo}: ${vagas} vaga-lumes`);
+
+    // 1) errar até o fim tem de PERDER, e a palavra tem de aparecer
+    const derrota = await p.evaluate(async (n) => {
+      const espera = ms => new Promise(r => setTimeout(r, ms));
+      const alvo = aceAlvo;
+      for (const l of 'ZXQWKYJHVBFG') {
+        if (aceVagasVivas <= 0) break;
+        const t = document.querySelector(`.aceT[data-l="${l}"]`);
+        if (!t || t.classList.contains('nao') || t.classList.contains('tem')) continue;
+        t.click(); await espera(70);
+      }
+      await espera(1600);
+      const win = document.getElementById('win');
+      return { vagas: aceVagasVivas, alvo,
+               mostrou: [...document.querySelectorAll('#aceSlots .palSlot')].every(d => d.textContent),
+               perdidas: document.querySelectorAll('#aceSlots .palSlot.perdida').length,
+               overlay: win.classList.contains('on'),
+               titulo: document.getElementById('winT').textContent,
+               texto: document.getElementById('winP').textContent,
+               botao: document.getElementById('winNovo').textContent };
+    }, nivel);
+
+    checa(derrota.vagas === 0 && derrota.overlay && derrota.titulo.includes('Acabaram'),
+          `${rotulo}: acabar os vaga-lumes encerra a partida`,
+          `vagas=${derrota.vagas} overlay=${derrota.overlay} "${derrota.titulo}"`);
+    checa(derrota.mostrou && derrota.perdidas > 0 && derrota.texto.includes(derrota.alvo),
+          `${rotulo}: revela a palavra "${derrota.alvo}" e marca o que ela não achou`,
+          `mostrou=${derrota.mostrou} perdidas=${derrota.perdidas}`);
+    checa(derrota.botao === 'Tentar de novo', `${rotulo}: oferece tentar de novo`);
+
+    // 2) e acertar tem de vencer normalmente
+    await p.click('#winNovo');
+    await p.waitForTimeout(600);
+    const vitoria = await p.evaluate(async () => {
+      const espera = ms => new Promise(r => setTimeout(r, ms));
+      // só as letras que existem na palavra: não pode perder
+      for (const l of new Set([...aceAlvo].map(semAcento))) {
+        const t = document.querySelector(`.aceT[data-l="${l}"]`);
+        if (t) { t.click(); await espera(70); }
+      }
+      await espera(200);
+      return { completou: aceCompleta(), vagas: aceVagasVivas };
+    });
+    checa(vitoria.completou && vitoria.vagas === +vagas,
+          `${rotulo}: só letras certas completa a palavra sem perder vaga-lume`,
+          `completou=${vitoria.completou} vagas=${vitoria.vagas}`);
+
+    await p.waitForTimeout(1200);
+    if (await p.locator('#win.on').isVisible()) { await p.click('#winHome'); }
+    else { await p.click('#btnBack'); }
+    await p.waitForTimeout(500);
   }
 
   // ---------- 3. RPG: os 10 capítulos concluem ----------

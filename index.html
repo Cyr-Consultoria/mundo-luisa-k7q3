@@ -41,6 +41,7 @@
   --g6a:#FF9F6B;--g6b:#E8723F;   /* palavra */
   --g7a:#6BC5FF;--g7b:#4D98E4;   /* números */
   --g8a:#C77DFF;--g8b:#B87CF5;   /* adivinha quem */
+  --g9a:#FF8A8A;--g9b:#FF6B6B;   /* acende a palavra */
 
   /* superfícies e estados */
   --veu:rgba(255,255,255,.9);
@@ -148,6 +149,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .j6{background:linear-gradient(140deg,var(--g6a),var(--g6b))}
 .j7{background:linear-gradient(140deg,var(--g7a),var(--g7b))}
 .j8{background:linear-gradient(140deg,var(--g8a),var(--g8b))}
+.j9{background:linear-gradient(140deg,var(--g9a),var(--g9b))}
 
 /* ---------- Chips / seletor segmentado ---------- */
 .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 14px}
@@ -577,6 +579,39 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .advQ:active{transform:scale(.95)}
 .advQ.usada{opacity:.34;pointer-events:none}
 
+
+/* ---------- Acende a Palavra ---------- */
+.aceVagas{display:flex;gap:6px;justify-content:center;margin:0 0 12px;min-height:38px}
+/* O tile do vaga-lume traz o chão de floresta junto; solto sobre o creme ele
+   vira um quadrado escuro. Recortado em círculo vira ficha de luz — que é o
+   que ele representa aqui. */
+.aceVagas canvas{width:36px;height:36px;border-radius:50%;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  box-shadow:0 0 0 2px var(--amarelo),0 3px 8px rgba(120,40,90,.22);
+  transition:opacity var(--dur-med) var(--ease-out),transform var(--dur-med) var(--ease-out),
+             box-shadow var(--dur-med) var(--ease-out)}
+.aceVagas canvas.off{opacity:.4;transform:scale(.84);
+  box-shadow:0 0 0 2px var(--traco-forte)}
+.aceVagas.acendendo canvas{animation:pulsar 700ms var(--ease-out) 2}
+
+.aceTeclado{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:400px;margin:0 auto 14px}
+@media(min-width:700px){ .aceTeclado{grid-template-columns:repeat(9,1fr);max-width:560px} }
+.aceT{
+  min-height:46px;border:0;border-radius:12px;cursor:pointer;padding:0;
+  font:inherit;font-size:19px;font-weight:900;color:var(--tinta);background:var(--card);
+  box-shadow:var(--sombra);
+  transition:transform var(--dur-fast) var(--ease-out),opacity var(--dur-med) var(--ease-out),
+             background var(--dur-med) var(--ease-out),color var(--dur-med) var(--ease-out);
+}
+.aceT:active{transform:scale(.9)}
+.aceT.tem{background:linear-gradient(135deg,var(--verde),var(--ok));color:var(--tinta);pointer-events:none}
+.aceT.nao{opacity:.3;pointer-events:none}
+#aceSlots .palSlot{border-style:solid;border-color:var(--traco-forte);background:rgba(255,255,255,.55)}
+#aceSlots .palSlot.cheio{background:var(--card);border-color:transparent}
+#aceSlots .palSlot.revelada{background:linear-gradient(135deg,var(--amarelo),#F5B92E);border-color:transparent}
+/* Letra que ela não descobriu, mostrada no fim de jogo. */
+#aceSlots .palSlot.perdida{background:var(--nao);color:var(--branco);border-color:transparent}
+
 /* ---------- Acessibilidade ----------
    Movimento reduzido não é ausência de resposta: o :active continua, só some o
    deslocamento. Os outros dois blocos existem porque este app é feito de
@@ -627,7 +662,8 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <button class="jogo j6" style="--i:4" data-go="vPal"><span class="em">🔤</span><b>Monta a Palavra</b><span>Toque nas letras e forme a palavra</span></button>
       <button class="jogo j7" style="--i:5" data-go="vNum"><span class="em">🔢</span><b>Conta com a Luísa</b><span>Conte, some e diminua</span></button>
       <button class="jogo j8" style="--i:6" data-go="vAdv"><span class="em">🔍</span><b>Adivinha Quem</b><span>Descubra o rosto secreto perguntando</span></button>
-      <button class="jogo j5" style="--i:7" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
+      <button class="jogo j9" style="--i:7" data-go="vAce"><span class="em">🔦</span><b>Acende a Palavra</b><span>Descubra as letras escondidas</span></button>
+      <button class="jogo j5" style="--i:8" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
     </div>
   </section>
 
@@ -752,6 +788,25 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <button class="btn" id="advAdivinhar">🎯 É essa!</button>
       <button class="btn pri" id="advNovo">🔄 Novo jogo</button>
     </div>
+  </section>
+
+  <!-- ACENDE A PALAVRA -->
+  <section class="view" id="vAce">
+    <div class="chips" id="aceChips">
+      <button class="chip on" data-n="1">Fácil · 4 e 5</button>
+      <button class="chip" data-n="2">Médio · 6 letras</button>
+      <button class="chip" data-n="3">Difícil · 7 a 9</button>
+    </div>
+    <div class="hud">
+      <div class="pill">🔦 Palavra <b id="aceN">1</b>/4</div>
+      <div class="pill">⭐ Acertou <b id="aceAcertos">0</b></div>
+    </div>
+    <div class="aceVagas" id="aceVagas" aria-label="Vaga-lumes acesos"></div>
+    <div class="palPista" id="acePista"></div>
+    <div class="palSlots" id="aceSlots"></div>
+    <p class="advAjuda" id="aceAjuda">Toque numa letra. Será que ela está na palavra?</p>
+    <div class="aceTeclado" id="aceTeclado"></div>
+    <div class="acoes"><button class="btn pri" id="aceNovo">🔄 Outras palavras</button></div>
   </section>
 
   <!-- AVENTURA (RPG) -->
@@ -883,8 +938,8 @@ document.getElementById('btnSom').addEventListener('click', e=>{
 });
 
 /* =================== Navegação (Direction-aware transition) =================== */
-const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vAdv:'Adivinha Quem', vRpg:'Aventura de Luísa'};
-const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vAdv','vRpg'];
+const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vAdv:'Adivinha Quem', vAce:'Acende a Palavra', vRpg:'Aventura de Luísa'};
+const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vAdv','vAce','vRpg'];
 let atual='vHome';
 /* Origin-aware animation: guarda onde o dedo tocou para a tela nascer dali. */
 let origemToque=null;
@@ -912,6 +967,7 @@ function irPara(id){
   if(id==='vPal') novaRodadaPal();
   if(id==='vNum') novaRodadaNum();
   if(id==='vAdv') novaRodadaAdv();
+  if(id==='vAce') novaRodadaAce();
   if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
 /* Character-select: o cartão escolhido sobe e os outros recuam por um instante
@@ -968,6 +1024,17 @@ let winAcao=null;
 function vencer(emoji, titulo, texto, acao){
   winAcao=acao; sWin(); confete(130);
   document.getElementById('winNovo').textContent='Jogar de novo';
+  document.getElementById('winHome').textContent='Menu';
+  document.getElementById('winEmoji').textContent=emoji;
+  document.getElementById('winT').textContent=titulo;
+  document.getElementById('winP').textContent=texto;
+  document.getElementById('win').classList.add('on');
+}
+/* Irmão do vencer(): mesmo overlay, sem confete e sem fanfarra. Existe por causa
+   do Acende a Palavra, o único jogo do app com derrota de verdade. */
+function perder(emoji, titulo, texto, acao){
+  winAcao=acao; sNo();
+  document.getElementById('winNovo').textContent='Tentar de novo';
   document.getElementById('winHome').textContent='Menu';
   document.getElementById('winEmoji').textContent=emoji;
   document.getElementById('winT').textContent=titulo;
@@ -1739,8 +1806,163 @@ function venceuAdv(){
   vencer('🔍','Achou!', 'Você descobriu com '+advNPerg+(advNPerg===1?' pergunta.':' perguntas.'), novaRodadaAdv);
 }
 
-/* =================== 8) AVENTURA (RPG) =================== */
+
+/* =================== 8) ACENDE A PALAVRA ===================
+   É a forca, sem forca. A mecânica que vale é lembrar QUAIS letras existem na
+   palavra — recall, e não reconhecimento como no Monta a Palavra.
+
+   O boneco enforcado é um game over, e este app não tem game over. No lugar:
+   vaga-lumes (os mesmos que ela acende no capítulo 2) que vão apagando a cada
+   erro. Quando o último apaga, a Luísa acende a lanterna e REVELA uma letra de
+   graça, e todos voltam. O erro custa ajuda, nunca a partida. */
+const ACE_ALFABETO = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const ACE_VAGAS = {1:6, 2:5, 3:4};
+const ACE_POR_RODADA = 4;
+/* Teclado sem acento: tocar I revela Í, tocar O revela Ó. Ela está aprendendo a
+   letra, não a regra de acentuação — e um teclado com Á É Í Ó Ú dobraria de tamanho. */
+const semAcento = t => t.normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+let aceNivel=1, aceFila=[], aceIdx=0, aceAcertos=0;
+let aceAlvo='', aceAchadas=new Set(), aceVagasVivas=0, aceReveladas=new Set();
+
+document.querySelectorAll('#aceChips .chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#aceChips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); aceNivel=+c.dataset.n; beep(700,.08); novaRodadaAce();
+}));
+document.getElementById('aceNovo').addEventListener('click',()=>{beep(700,.08);novaRodadaAce()});
+
+function novaRodadaAce(){
+  aceFila = shuffle([...PAL_BANCO[aceNivel]]).slice(0, ACE_POR_RODADA);
+  aceIdx=0; aceAcertos=0;
+  document.getElementById('aceAcertos').textContent='0';
+  montarAce();
+}
+
+function montarAce(){
+  const [palavra, emoji, ehFoto] = aceFila[aceIdx];
+  aceAlvo = palavra;
+  aceAchadas = new Set();
+  aceReveladas = new Set();
+  aceVagasVivas = ACE_VAGAS[aceNivel];
+  document.getElementById('aceN').textContent = aceIdx+1;
+  document.getElementById('aceAjuda').textContent = 'Toque numa letra. Será que ela está na palavra?';
+
+  const pista = document.getElementById('acePista');
+  pista.className = 'palPista' + (ehFoto?' foto':'');
+  if(ehFoto){
+    pista.style.backgroundImage = `url('${IMGS[Math.floor(Math.random()*IMGS.length)]}')`;
+    pista.textContent='';
+  } else { pista.style.backgroundImage=''; pista.textContent=emoji; }
+
+  const tec=document.getElementById('aceTeclado'); tec.innerHTML='';
+  ACE_ALFABETO.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='aceT'; b.textContent=l; b.dataset.l=l;
+    b.setAttribute('aria-label','Letra '+l);
+    b.addEventListener('click',()=>tentarLetra(l,b));
+    tec.appendChild(b);
+  });
+  desenharVagas();
+  pintarAce();
+}
+
+function desenharVagas(){
+  const box=document.getElementById('aceVagas'); box.innerHTML='';
+  comAtlas(atlas=>{
+    box.innerHTML='';
+    for(let i=0;i<ACE_VAGAS[aceNivel];i++){
+      const cv=document.createElement('canvas'); cv.width=48; cv.height=48;
+      const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false;
+      const aceso = i < aceVagasVivas;
+      /* vagOff=23, vagOn=24 — os mesmos tiles do capítulo 2 */
+      cx.drawImage(atlas,(aceso?24:23)*16,24,16,16,0,0,48,48);
+      if(!aceso) cv.classList.add('off');
+      box.appendChild(cv);
+    }
+  });
+}
+
+function pintarAce(){
+  const slots=document.getElementById('aceSlots');
+  slots.className='palSlots'+classeTamanho(aceAlvo.length);
+  slots.innerHTML='';
+  [...aceAlvo].forEach((ch,i)=>{
+    const d=document.createElement('div');
+    const base=semAcento(ch);
+    const mostra = aceAchadas.has(base) || aceReveladas.has(i);
+    d.className='palSlot'+(mostra?' cheio':'')+(aceReveladas.has(i)?' revelada':'');
+    d.textContent = mostra ? ch : '';
+    slots.appendChild(d);
+  });
+}
+
+const aceCompleta = () => [...aceAlvo].every((ch,i)=>aceAchadas.has(semAcento(ch))||aceReveladas.has(i));
+
+function tentarLetra(l, botao){
+  if(aceAchadas.has(l) || botao.classList.contains('nao')) return;
+  const tem = [...aceAlvo].some(ch=>semAcento(ch)===l);
+  if(tem){
+    aceAchadas.add(l); botao.classList.add('tem'); sOk(); pintarAce();
+    document.getElementById('aceAjuda').textContent='Tem sim! Continue.';
+    if(aceCompleta()) return concluirAce();
+    return;
+  }
+  botao.classList.add('nao'); sNo();
+  aceVagasVivas--;
+  desenharVagas();
+  if(aceVagasVivas>0){
+    document.getElementById('aceAjuda').textContent = aceVagasVivas===1
+      ? 'Cuidado! Só resta 1 vaga-lume.'
+      : 'Essa não tem. Restam '+aceVagasVivas+' vaga-lumes.';
+    return;
+  }
+  fimDeJogoAce();
+}
+
+/* ÚNICO game over do app, por decisão do Cyr em 2026-08-20. Sem risco de perder,
+   a forca vira só tocar todas as letras do alfabeto. A palavra é revelada no fim
+   para ela ver o que faltava — perder sem descobrir a resposta não ensina nada. */
+function fimDeJogoAce(){
+  document.querySelectorAll('#aceTeclado .aceT').forEach(b=>b.style.pointerEvents='none');
+  document.getElementById('aceAjuda').textContent='Acabaram os vaga-lumes…';
+  const slots=document.getElementById('aceSlots');
+  [...aceAlvo].forEach((ch,i)=>{
+    const d=slots.children[i];
+    const sabia = aceAchadas.has(semAcento(ch)) || aceReveladas.has(i);
+    d.textContent=ch; d.classList.add('cheio'); if(!sabia) d.classList.add('perdida');
+  });
+  setTimeout(()=>perder('😔','Acabaram os vaga-lumes',
+    'A palavra era '+aceAlvo+'. Tente de novo!', novaRodadaAce), 1200);
+}
+
+function concluirAce(){
+  sWin(); confete(60);
+  aceAcertos++; document.getElementById('aceAcertos').textContent=aceAcertos;
+  document.getElementById('aceAjuda').textContent='Palavra acesa! ✨';
+  setTimeout(()=>{
+    aceIdx++;
+    if(aceIdx >= aceFila.length){
+      vencer('🔦','Todas acesas!',
+        `Você descobriu ${aceAcertos} de ${aceFila.length} palavras.`, novaRodadaAce);
+    } else montarAce();
+  }, 1000);
+}
+
+/* =================== 9) AVENTURA (RPG) =================== */
 const ATLAS_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAnAAAAAoCAYAAAB+UccQAAAP0UlEQVR4nO2dcWhbxx3HfwolGBMcYURwPSO04XVKCGFJ09Vt9Ufwipt5JoSSleGMkI6utKFrt5IN/+Et9gjBMBPWrDShC20IqwltCKaIrDWpyTY1SdvUGV5wtE50QriaCcLIIQTjlbz9IZ9873R37+7de3p69u8DIXr37vveydJ776vf3e8uAgzWzV7rRmYGtqe2APs/AEBk68UIq0H96tEjwZLs/J4l25/NfSr9/Ez1CIIgSDiw3cytm722m/8PNpwAAIC/3H3ZLhKYANSHW48Ey+M7e6Xmi3DlOv/zM9UjCIIg4eEB2U72wa8L6sOtRxAEQRCkMbEZuBuZGaODoT7c+qBJbUkoRZAyM3luBMlUXyzOK+nb21t90SMIgiCIKjYDd/LPzUYHQ3249UiwzJdLgeoRBEGQ8FCNBPwstUUpekD4U2bGFkVAfbj1jUCQEbjJyc+1/n7d3Q/bjmGqVx2/RmDHsZnqEQRBkHARAVh5+H+7o1VJ9O/ZeQBYMQGoD7eeppzutwAAon1jEZVyL/Vr1cCRzNHWaExJSyJtJKPUVI8gCIKED1sXKnmwuwX14dYDAGws7YWF2LhwH8CYr/ogSSa/qVQvm/2PL3oEQRAEUcVm4N48fVxJ9Pxzr3LLTfVBI2u/SptN9UG3pZzutxZgvPqa3b8QG4dyut8SRdFM9X+/cErYZppIcje33ETf3f1wxMp+oJaE0L27pv2megRBEATRYR2vcPOuF2DzrheE206Y6oPEtK1+vddGbZcf8Nqp+/0Ls/5sUxTONkWF237rEQRBkMandh646a/h1uVTcHUwDVcH0wAA8FaqDx472gcw/TXANunUceb6gHkr1QcAAFcH05U211nP4+pgunrceuh3vTANl09tcyzzS3/rciWSRr4/jx3tq5bVS0+07DHroT+wWJZu+61HEARBGp9aN7VssLjmQ8V8meoDxtR0eWXavDymrp4YrY2FHgAAWIhPKJsvL/SEID+LRvweIAiCIAjB5qgiyZWxOYXx47bxPPG9rzpOOWKqp7Mig9DL2k8f2y89Xec32Rmj9+9Gz7IQn+CWXxtNWV2HM47juHT1keTuSP8bOWnbxg51Cs/rhf7MwDWp/uBIl2/6K9cvRpymA7ly/WJEtN6pqR5BEAQJDzYDZ7347sqN/UN7RXrf8/8c4h4M9eHWq5DNFlxrnfRO5ovUEZkwU72T+SJ1RCbMVI8gCIIgqnCTGJC1idMcb37rEQRBEARR4wEAgK/m72qJ2PqoD7eeRRQlSybjSsc31ReyWW55PJmsix5BEARBGh17VsErLZX/X7vDr032/1VwNNSHW98gmBotNGoIgiDIaqfx00IRZJWju6QVW99UjyAIgoQP243cNgheJjr5DPcBgPpw6wEqKyjIukBV1kJ1qycrGeyf7OTuf6c7BwD2bF8v9QDOiQhOCQimepUsUj/1CIIgSDio3sytM9esG6c/AACA7c/tBqfXOzJDdvOH+lDrCbwlsGhUF7N3q+/pkesnJvzVB2XgdKf2YKNopnoEQRAkXFS7UMmDXfU1C+rDrWdhjZaTMfNajyAIgiCIGGlXFOlqYredQH149cRoeT0liOpxeRG0LV/PVF//YfIfUv0vur9b1c88sKVmvywCNzn5uZLJ7O5+mHsMEz1G4BAEQRAdlJIYfnloAAAqD0eVByip7xV4/vqd36+53FSPyzNrWyhTpgMxa7Sp468NETzZ3KeRx3f2WiZj1FqjMZgvl7xsFoIgCNKg1Dws6Iedk1lQReeYeP5gzx80a/39IwiCIIgKkd9eOxjo2KQf3+4w0p/bNFtTNpGZ49btSbUZnYtHrnTM82PqcGjpfKDnNyV3/FzQTTDiy9GHgm6CEb/rOoOG1oCdu3d6fv+cW1zklrc1NXl9KmMuHDtkpD8zespIn+0fN9KPtKuPC+ZRWjR7fjlx4f0sPL3H3byWA4NvAQDAyNGf+qYfGnrX1bEJxbna57cXrL9vv1aW1vGvqaC5Pv2B0f13Vc0DR4xbuWCfyDYab7Ht98PIBUU8kQi6CUbkqNcPtW8KrB06fFG8HXQT6kJ6NGkBAPQdzobW5Fk3e63I1nBMnUKM2z1mpZTm1g22/fUwcp8N2c/xyJB/D8CH4jFXui8KOFygEWhtFX9+8/Ml6f7i3Cy0Rt19/gAA8+VSjf4uZ6Wh9febYMPydeSkNz0/4cOX8gAA8NTrCdfHT5ctqy8aEd6/tAzc7VIZAAA2xaKuGhNrqbzR0h2zC2+uOAdt7XYTNpGZqzFuBFJOGzk3Js70/a923hgaUqp3SLFeWGgb489758Rcv9rSYgTT60fn+1uc7LFWXset9u4JLRNU7n/ZFpmKjp0IhYmisSyrkvwTEd9AvUJk3khZM/XwmVtcdDRxTz75uG370qUrSu2oGrfkXqZ8HAD8NXKInQvvZyGfz8GF98F1FG4twTNuvP08IwcAMH3zutJ5tm3d6Vjnw5fyAKn+ymsYc2Xi0uXK/Udm4qoGTuXhILvxqzwcTI0boa29zWbiZOaNply4IzRxbt9/gfoVGF/+JalTxtuvcyxoFzZXm0I+r1RPFvWLx1rk5yg5f05rEdPrx/T6paHNG12mYuJY48aWqxq5MwM523EOjnRqmyjrZmVS40aPwsnMG0HHxLHmjZQ5mTiReauWZcfhs6EmbRNXnC0CAEB7h4c3q2VM778q90+v21+6XekJim1yDiIUi0VIJOwTk6vo+w8M2l6PnT1aV/1ahjZvAACQ6tc2ccS8TUz9F3p2PCg0cVUDZ2quvIhK8SJrImjz5hbaxNHv/1r2Hrd+V7K5pizOCf+7KePtVztWnqtzy3TngerrbbmzwjI/CHvXZPJbal3A2S9r3+dPSpVo3ERMbnB7sss/QJL2euT7OxxbgiOl9Urt4MEzb/Q+mYkjJm3jO69Vyxb2v1JTR2biWONGGNiXrpaPnO9rSDN27+4iNG/Q695UMW/V4zuYuHt3F2HP3u7qdryj8p0qzFYixDITJzVvBJcmzsn4mHSFenX/ZUln1lFbHdCXuu+qfTxUjA+JvgFATRTOSd9/YBD2HnuPKftR1YSx+u2PtcCNq3ds+lsfddnqbP7+oE3PahD/ICaOh1IXar26TtnIWhCIzBvZxzNxQaIaNWukc4r0OAaOj+r1MxxbAoilYBgyNhOnev3KzBtdR2biaPNGtlkTJ4I2b9lc1rYv2anXhUSib/S2ahTOWlpeTeN/n9i2I+vlq3A0b2hyZeK8gmfeyGsVE2eCSZSqEcbAkfZP5StJCfn8yrCIRCJeNXQyI9caq9y/5kvu7g8iPS8KJ9Lv7n2+xrwBAOw99p7NxNEQI0b0rHkDALj1UZfNxHlp3kynPiL69aB23bHn0z2/kj4zthKFy4xpnYeOvrHlbBROycCZRtd0onuNYN5KzI0hRt1gZCZuR3wjTBUWXJ/fjd7LJAYvulB19TlxtTVB24UyAABMQ+X/thlereV9nHpzT0ertY6U1teYN4D6jNkUdZ2K6vKicLRpYw0ba+hoWLOmU8/rrlWReaunsaPNG11GTJwf+NE9qsRod23Z4Un1+sd/DQCV9hOTRps3sp1IVP6m6cw6oYlza9xYPR19W2mD81g4kXkjyEwc0fPMG4E1cV7hVRKB0xg43vlo/exs3khPeOr1WKUbddm4VcoS0Bp1PjYxbyyirtR1vMqNyFxR3lVKxra5rSMyb7wyUZTOxLx5oUcQk+7TIDkzkLOSnUkg/7K5rO0fvY/tZnVrwmidRSGqr1JHBInOCfcLBlbr1kHcITJvBLrc3r3qH8VisS7nQbyHHu+mOvaNNm9s9I0uo+uFZhoRUfdqT6qtOg6OGDTRNCIsZPybzLwRSoUSNxK3mpIYgibsY+B4Y9ucIBE00dg2FtV6PIan9sGRHeJ5A3UzTXks7H9FOgZOhmoEjtedSsyYSjQuqIQGpwhcc+sG4Vg4HfNWmC3UROGUo2/ZcfE4uOy4chtksN2tXk8HIrtn6uV9iynOFrWjjiqD/3nRN4AVMyeLwlUiY/+Snr979CXh/rGzR+HGV8LdULo9BydGazMw5+fln5/Tfr/4+NwSAAA88eNgftTuf4O874RS/b5oJCKKwAFAdRwcHYFzZeC8HhOnOu5NVIc2cQBq0bj+3q2eZMWutiQGv3jx1WY4eVw8vhAAx8DpEGuJaX1/h6f2AfQXYHhsH7wYPw0A/nWt6pg2GtqYuR0DF9l6MSIzcSLzRk8VUh0DJ6njFW1NTbaJe3kmTmTe2CzUS5euVDNQaRNHmzfR+LdHhhZXEhl4Jo4yb6ZTibDGx+sxcLoJCzSJRJwbhSNdqAQ3XcZBZ22anl+kN50Hrh58fG4pMCPnhp4dD3KjcCyuDJzXY+K8SF5gTdyujP0hezm1yVbXqylNgiYsSQy0eQuizfXAJAtVF93v75Ed52F4rBKB2wRRbh2VJAYAfqQuOnYiojoOTpSFahKBCxPseDieiXNCNIUIa+LYfbzzE2pMHIdHhhYDTdSoQTbeTal+7UoMrIljzZtfiKJvNLKxcO/OfkfpPM908KN027+RVtLf+KpPqZ4q9UhioM1bXZIYACDWqn98URSOF30DEBi4ek4YSvAieYF0ibpdSisWjwm7UWMufyXS+JHk4HUSA2+aELYMkxi8Qy2JYQVZEgOBXL8/3/x7OPLJs9VyWfdp0Bwc6YyoZqHK5oRz6kJVyUYl2aZ+TeTLy1ZlTVx8zt5FXmhrsdWVmSjaxNFlsvMTSHRNthKDSratn3O/uUXn/lsv06ZDsViE9vbG+Xt6hV9JDKKIm99JDCvka+qrQEwcG4WTzgNHE7Y54Vh6Um2wxETgZOatK9lcHQfHM3E88+ZmOpFGT3IIelmuRuiaXA2U7pRg+NG3ARZOwvCjb9tMnIypKbMsRZUonGwOOK+jbLYkBcVMVa9wMji8fSSqprIWqlME7G+nx+0FCXt02En/xEHmu6Cp1zFu9VoSS3b/7EvdV05O8HJOOIJK9I0gisJNTYkztWme6eBfgk+d/KGSfmSPUjXEI0RzwAE0cBJDveeEY02cU10CJjF4x1ocA+dXEsORT57VMm9eQQyam6W0Rs73RUQT+RJUo29slI0eG1ePlRlM5oSrGLU7nLLVickYOC9XYlAxcarmzXROOMxAXdvQUTiyzasnNXBBdKXS1HtOONrEyerQYBID4hem188fb/1KK9mBXbTeZDF7t2ufEoPmdiktmTHTyVQFMO86bZhxYqsYr1diIAaNNXK6UTcd46YTfSPdqLwo3Mges98kpnrETum+85qppkgNXCN0pdYbmYlrtFUYAMKZEBDGNgdBPSfQ5uHGuHmFm7VPVaNqjbwuKtIY+NFNyuPwwJvaGhKdKxaLq2KR+1W5EoMHkCicKPoGAPB/Cpo2iA0IlvQAAAAASUVORK5CYII=";
+
+/* Atlas carregado uma vez só e compartilhado: a abertura e o Acende a Palavra
+   desenham a partir dele. `function` de propósito — ela é chamada por código que
+   aparece ANTES daqui no arquivo, e declaração de função sobe (hoisting). */
+let _atlasImg=null, _atlasFila=[];
+function comAtlas(cb){
+  if(_atlasImg && _atlasImg.complete && _atlasImg.naturalWidth) return cb(_atlasImg);
+  _atlasFila.push(cb);
+  if(_atlasImg) return;
+  _atlasImg=new Image();
+  _atlasImg.onload=()=>{ const f=_atlasFila; _atlasFila=[]; f.forEach(x=>x(_atlasImg)); };
+  _atlasImg.src=ATLAS_URL;
+}
 /* ==================================================================
    MOTOR RPG — Mundo da Luísa  ·  v2
    Pixel art 16-bit top-down · 5 capítulos · 3 níveis de dificuldade
@@ -3256,9 +3478,7 @@ const AB = (() => {
   function iniciar(){
     const el=document.getElementById('abertura');
     medir(); addEventListener('resize',()=>{ if(!fechada){ medir(); cena(); } });
-    atlas=new Image();
-    atlas.onload=()=>{ cena(); if(!RM && !fechada) raf=requestAnimationFrame(quadro); };
-    atlas.src=ATLAS_URL;
+    comAtlas(img=>{ atlas=img; cena(); if(!RM && !fechada) raf=requestAnimationFrame(quadro); });
     /* Responde no pointerdown, não no clique: feedback imediato. */
     el.addEventListener('pointerdown', fechar, {once:true});
     el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') fechar(); });
