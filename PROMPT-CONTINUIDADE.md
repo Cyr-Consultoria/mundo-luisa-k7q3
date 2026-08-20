@@ -15,7 +15,7 @@
 
 ## 1. O que é
 
-Aplicação web com 7 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
+Aplicação web com 8 jogos, feita para uma criança de 7 anos, usando fotos reais dela.
 Arquivo único, sem servidor de aplicação, sem framework, sem dependência externa em
 runtime. Só um script Python costura os pedaços.
 
@@ -27,7 +27,8 @@ runtime. Só um script Python costura os pedaços.
 | 4 | Ateliê de Adesivos | canvas com adesivos arrastáveis, exporta PNG |
 | 5 | Monta a Palavra | pista em emoji, letras embaralhadas · 4–5 / 6 / 7–9 letras |
 | 6 | Conta com a Luísa | até 20 · dezenas até 100 e parcela que falta · vezes, dobro e metade |
-| 7 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
+| 7 | Adivinha Quem | dedução por eliminação · 12 / 18 / 24 rostos |
+| 8 | Aventura de Luísa | RPG top-down 16-bit, **10 capítulos** em 2 aventuras, 3 dificuldades |
 
 **Regra dos jogos 5 e 6.** Calibragem revista em 2026-08-19: a primeira versão
 ficou em nível de 5 anos, não de 7. Hoje a régua é **2º ano**:
@@ -64,9 +65,33 @@ Outras regras que continuam valendo:
   fora — a única exceção é LUÍSA, cuja pista é uma foto dela.
 - **Toda conta tem apoio visual**: quadro de dez até 20, material dourado (barra
   de 10 + unidade) até 100, e grupos de objetos para as vezes.
+- **Token de cor não pode se auto-referenciar.** Uma substituição global de hex
+  por token acertou a própria definição e gerou `--nao:var(--nao)`, que deixou o
+  ✕ e o risco de subtração sem cor **na versão publicada**. Hoje o teste cobra.
 - **`montaConta(nivel)` e `opcoesPara(resp)` são fonte única** — o jogo do menu e
   as metas `numero` do RPG chamam as mesmas funções. Estavam duplicados e
   duplicata diverge.
+
+**Regra do jogo 7 (Adivinha Quem).** Mecânica do jogo de tabuleiro de dedução;
+o nome comercial brasileiro é marca registrada e por isso **não** é usado — o app
+está numa URL pública. Solo: o app guarda o rosto secreto, ela pergunta e derruba.
+
+- **Os rostos são desenhados por código**, como o atlas. É isso que torna o jogo
+  possível: preciso controlar os atributos para cada pergunta cortar o conjunto
+  de forma limpa. Emoji não dá esse controle, foto muito menos.
+- **Tom de pele é único de propósito.** Transformar aparência de pessoa em
+  pergunta de quiz é escolha ruim; cabelo, olhos e acessório já bastam.
+- **As três silhuetas de cabelo têm de ser distinguíveis de relance** — curto só
+  topo, longo moldurando o rosto inteiro, maria-chiquinha com volumes saindo para
+  fora na altura da orelha. Na primeira versão longo e rabo eram quase iguais e
+  ela não conseguiria eliminar.
+- **Não dá para derrubar um rosto que ainda pode ser o secreto.** O toque é
+  recusado com um tremor e uma frase. É a versão deste jogo da regra de nunca
+  deixar a criança travada: sem isso ela derrubaria o secreto por engano e a
+  rodada morreria sem saída.
+- Rosto derrubado volta a ficar de pé com outro toque — engano se desfaz.
+- Combinações são sempre distintas: dois rostos iguais tornariam a rodada
+  insolúvel.
 
 **Destinatária:** Luísa, 7 anos, joga sozinha num iPad. Não lê texto longo.
 Nunca pode ficar travada sem saber o que fazer. Não existe "game over".

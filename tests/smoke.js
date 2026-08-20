@@ -75,7 +75,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   // ---------- 1. Tela de início ----------
   console.log('\n1) Tela de início');
   checa(await p.locator('#vHome.on').isVisible(), 'Home aparece');
-  checa(await p.locator('[data-go]').count() === 7, 'os 7 jogos estão no menu');
+  checa(await p.locator('[data-go]').count() === 8, 'os 8 jogos estão no menu');
 
   // ---------- 1a. Beat de confirmação da escolha ----------
   // Falhou em silêncio uma vez: `animation:cardIn ... both` mantinha os valores do
@@ -113,7 +113,7 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
       return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     const out = [];
     // conteúdo: tinta escura sobre os 7 gradientes (texto de 12,5px → 4,5)
-    for (let i = 1; i <= 7; i++)
+    for (let i = 1; i <= 8; i++)
       for (const lado of ['a', 'b'])
         out.push({ o: `cartão j${i}${lado}`, v: r(tk('--tx-cartao'), tk(`--g${i}${lado}`)), min: 4.5 });
     // controle: branco sobre cor funda (chip ativo, botão .pri, botão A)
@@ -126,6 +126,25 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
     out.push({ o: 'tinta sobre creme', v: r(tk('--tinta'), tk('--creme')), min: 4.5 });
     return out.map(x => ({ ...x, v: +x.v.toFixed(2) }));
   });
+  // Nenhum token pode se auto-referenciar: `--nao:var(--nao)` passou despercebido
+  // e deixou o ✕ e o risco de subtração sem cor na versão publicada.
+  const circulares = await p.evaluate(() => {
+    const folha = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules]; } catch (e) { return []; } })
+      .find(r => r.selectorText === ':root');
+    if (!folha) return ['(:root não encontrado)'];
+    const st = folha.style, ruins = [];
+    for (const nome of st) {
+      if (!nome.startsWith('--')) continue;
+      const v = st.getPropertyValue(nome).trim();
+      if (v.includes(`var(${nome})`)) ruins.push(nome);
+      if (v.startsWith('var(') && !getComputedStyle(document.documentElement).getPropertyValue(nome).trim())
+        ruins.push(nome + ' (vazio)');
+    }
+    return ruins;
+  });
+  checa(circulares.length === 0, 'nenhum token de cor se auto-referencia',
+        circulares.join(', '));
+
   const reprova = contraste.filter(x => x.v < x.min);
   checa(reprova.length === 0, `${contraste.length} pares de cor passam em AA`,
         reprova.map(x => `${x.o} ${x.v}:1 (mín ${x.min})`).join(' | '));
@@ -141,10 +160,11 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
         'faltando: ' + midia.join(', '));
 
   // ---------- 2. Os jogos simples abrem e o Voltar fecha ----------
-  console.log('\n2) Jogos 1–6 abrem e voltam');
+  console.log('\n2) Jogos 1–7 abrem e voltam');
   for (const [go, nome] of [['vMem', 'Memória'], ['vPuz', 'Quebra-cabeça'],
                             ['vDif', 'Diferenças'], ['vAte', 'Ateliê'],
-                            ['vPal', 'Monta a Palavra'], ['vNum', 'Conta com a Luísa']]) {
+                            ['vPal', 'Monta a Palavra'], ['vNum', 'Conta com a Luísa'],
+                            ['vAdv', 'Adivinha Quem']]) {
     await p.click(`[data-go="${go}"]`);
     await p.waitForTimeout(450);
     const abriu = await p.locator(`#${go}.on`).isVisible();
@@ -223,6 +243,46 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
   checa(errado.certaAindaExiste, 'erro no jogo de números não tira a opção certa');
   await p.click('#btnBack');
   await p.waitForTimeout(400);
+
+
+  // ---------- 2e. Adivinha Quem: resolve uma rodada em cada tamanho ----------
+  console.log('\n2e) Adivinha Quem — dedução até sobrar um');
+  for (const n of ['12', '18', '24']) {
+    await p.click('[data-go="vAdv"]');
+    await p.waitForTimeout(450);
+    await p.click(`#advChips .chip[data-n="${n}"]`);
+    await p.waitForTimeout(450);
+
+    const r = await p.evaluate(async (alvo) => {
+      const espera = ms => new Promise(r => setTimeout(r, ms));
+      const bts = () => [...document.querySelectorAll('.advRosto')];
+      let protegeu = false;
+
+      // tentar derrubar antes de perguntar tem de ser recusado
+      bts()[0].click(); await espera(60);
+      protegeu = !bts()[0].classList.contains('fora');
+
+      for (let q = 0; q < ADV_PERG.length; q++) {
+        if (advFaces.filter(f => !f.fora).length <= 1) break;
+        document.querySelectorAll('.advQ')[q].click();
+        await espera(40);
+        advFaces.forEach((f, i) => { if (!f.fora && !advPodeSer(f)) bts()[i].click(); });
+        await espera(40);
+      }
+      await espera(700);
+      const pe = advFaces.filter(f => !f.fora);
+      return { protegeu, sobrou: pe.length, acertou: pe[0] === advSecreto,
+               perguntas: advNPerg, total: +alvo,
+               venceu: document.getElementById('win').classList.contains('on') };
+    }, n);
+
+    checa(r.protegeu, `${n} rostos: não deixa derrubar sem informação`);
+    checa(r.sobrou === 1 && r.acertou && r.venceu,
+          `${n} rostos: sobra só o secreto em ${r.perguntas} perguntas`,
+          `sobrou ${r.sobrou}, acertou=${r.acertou}, venceu=${r.venceu}`);
+    if (r.venceu) { await p.click('#winHome'); await p.waitForTimeout(450); }
+    else { await p.click('#btnBack'); await p.waitForTimeout(450); }
+  }
 
   // ---------- 3. RPG: os 10 capítulos concluem ----------
   console.log('\n3) Aventura — 10 capítulos de ponta a ponta');

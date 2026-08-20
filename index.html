@@ -40,6 +40,7 @@
   --g5a:#7AE0A0;--g5b:#20A971;   /* aventura */
   --g6a:#FF9F6B;--g6b:#E8723F;   /* palavra */
   --g7a:#6BC5FF;--g7b:#4D98E4;   /* números */
+  --g8a:#C77DFF;--g8b:#B87CF5;   /* adivinha quem */
 
   /* superfícies e estados */
   --veu:rgba(255,255,255,.9);
@@ -47,7 +48,7 @@
   --traco:rgba(120,40,90,.14);
   --traco-forte:rgba(120,40,90,.22);
   --ok:#3FBE72;--ok-esc:#1E9E6A;
-  --nao:var(--nao);
+  --nao:#D0455F;
   --escuro:#3C2A5E;--escuro-2:#1E1533;
   --breve-a:#4A4A5E;--breve-b:#2A2A38;
   --overlay:rgba(20,14,32,.92);
@@ -146,6 +147,7 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .j5{background:linear-gradient(140deg,var(--g5a),var(--g5b))}
 .j6{background:linear-gradient(140deg,var(--g6a),var(--g6b))}
 .j7{background:linear-gradient(140deg,var(--g7a),var(--g7b))}
+.j8{background:linear-gradient(140deg,var(--g8a),var(--g8b))}
 
 /* ---------- Chips / seletor segmentado ---------- */
 .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 14px}
@@ -534,6 +536,47 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
 .menu.confirmando .jogo:not(.escolhido){opacity:.32;transform:scale(.94)}
 .menu.confirmando .jogo.escolhido{transform:scale(1.05);box-shadow:var(--sombra-alta);z-index:2}
 
+
+/* ---------- Adivinha Quem ---------- */
+.advGrade{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:420px;margin:0 auto 12px}
+@media(min-width:700px){ .advGrade{grid-template-columns:repeat(6,1fr);max-width:620px} }
+.advRosto{
+  position:relative;border:0;padding:0;border-radius:16px;cursor:pointer;aspect-ratio:1;
+  background:var(--card);box-shadow:var(--sombra);overflow:hidden;
+  animation:cardIn var(--dur-med) var(--ease-out) both;animation-delay:calc(var(--i,0)*28ms);
+  transition:transform var(--dur-fast) var(--ease-out),opacity var(--dur-med) var(--ease-out);
+}
+.advRosto canvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.advRosto:active{transform:scale(.93)}
+/* Derrubado = carta virada. Precisa ser inconfundível de longe: o que importa
+   aqui é ver num relance quem ainda está de pé, não reconhecer quem já saiu.
+   Cinza + opacidade baixa no rosto inteiro parecia imagem quebrada. */
+.advRosto.fora{transform:rotate(-6deg) scale(.93)}
+.advRosto.fora canvas{opacity:.16}
+.advRosto.fora::after{content:'✕';position:absolute;inset:0;display:grid;place-items:center;
+  font-size:34px;font-weight:900;color:var(--nao);opacity:.85}
+.advRosto.nega{animation:tremer 420ms var(--ease-out)}
+.advRosto.alvo{box-shadow:0 0 0 4px var(--ctrl-a),var(--sombra)}
+.advGrade.adivinhando .advRosto:not(.fora){box-shadow:0 0 0 3px var(--amarelo),var(--sombra)}
+
+.advResp{min-height:52px;display:grid;place-items:center;margin:0 0 10px}
+.advResp span{display:inline-flex;align-items:center;gap:8px;border-radius:999px;
+  padding:10px 20px;font-weight:800;font-size:16px;box-shadow:var(--sombra);
+  animation:winIn var(--dur-med) var(--ease-spring) both}
+.advResp .sim{background:linear-gradient(135deg,var(--verde),var(--ok));color:var(--tinta)}
+.advResp .nao{background:var(--card);color:var(--tinta)}
+
+.advAjuda{text-align:center;font-size:13px;opacity:.7;margin:0 0 10px;font-weight:600}
+.advPerguntas{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:420px;margin:0 auto 14px}
+@media(min-width:700px){ .advPerguntas{grid-template-columns:repeat(3,1fr);max-width:620px} }
+.advQ{
+  min-height:46px;border:0;border-radius:14px;cursor:pointer;padding:0 10px;
+  font:inherit;font-size:14px;font-weight:800;color:var(--tinta);background:var(--card);
+  box-shadow:var(--sombra);transition:transform var(--dur-fast) var(--ease-out),opacity var(--dur-med) var(--ease-out);
+}
+.advQ:active{transform:scale(.95)}
+.advQ.usada{opacity:.34;pointer-events:none}
+
 /* ---------- Acessibilidade ----------
    Movimento reduzido não é ausência de resposta: o :active continua, só some o
    deslocamento. Os outros dois blocos existem porque este app é feito de
@@ -583,7 +626,8 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
       <button class="jogo j4" style="--i:3" data-go="vAte"><span class="em">✨</span><b>Ateliê de Adesivos</b><span>Decore a sua foto e salve</span></button>
       <button class="jogo j6" style="--i:4" data-go="vPal"><span class="em">🔤</span><b>Monta a Palavra</b><span>Toque nas letras e forme a palavra</span></button>
       <button class="jogo j7" style="--i:5" data-go="vNum"><span class="em">🔢</span><b>Conta com a Luísa</b><span>Conte, some e diminua</span></button>
-      <button class="jogo j5" style="--i:6" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
+      <button class="jogo j8" style="--i:6" data-go="vAdv"><span class="em">🔍</span><b>Adivinha Quem</b><span>Descubra o rosto secreto perguntando</span></button>
+      <button class="jogo j5" style="--i:7" data-go="vRpg"><span class="em">🗡️</span><b>Aventura de Luísa</b><span>Um mundo de capítulos pra explorar</span></button>
     </div>
   </section>
 
@@ -687,6 +731,27 @@ main{max-width:760px;margin:0 auto;padding:6px 14px calc(28px + env(safe-area-in
     <div class="numApoio" id="numApoio"></div>
     <div class="numOpcoes" id="numOpcoes"></div>
     <div class="acoes"><button class="btn pri" id="numNovo">🔄 Outras contas</button></div>
+  </section>
+
+  <!-- ADIVINHA QUEM -->
+  <section class="view" id="vAdv">
+    <div class="chips" id="advChips">
+      <button class="chip on" data-n="12">Fácil · 12</button>
+      <button class="chip" data-n="18">Médio · 18</button>
+      <button class="chip" data-n="24">Difícil · 24</button>
+    </div>
+    <div class="hud">
+      <div class="pill">❓ Perguntas <b id="advPerg">0</b></div>
+      <div class="pill">🙂 De pé <b id="advPe">12</b></div>
+    </div>
+    <div class="advResp" id="advResp"></div>
+    <div class="advGrade" id="advGrade"></div>
+    <p class="advAjuda" id="advAjuda">Toque numa pergunta. Depois derrube quem não combina.</p>
+    <div class="advPerguntas" id="advPerguntas"></div>
+    <div class="acoes">
+      <button class="btn" id="advAdivinhar">🎯 É essa!</button>
+      <button class="btn pri" id="advNovo">🔄 Novo jogo</button>
+    </div>
   </section>
 
   <!-- AVENTURA (RPG) -->
@@ -818,8 +883,8 @@ document.getElementById('btnSom').addEventListener('click', e=>{
 });
 
 /* =================== Navegação (Direction-aware transition) =================== */
-const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vRpg:'Aventura de Luísa'};
-const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vRpg'];
+const VIEWS = {vHome:'O Mundo da Luísa', vMem:'Jogo da Memória', vPuz:'Quebra-cabeça', vDif:'Ache as Diferenças', vAte:'Ateliê de Adesivos', vPal:'Monta a Palavra', vNum:'Conta com a Luísa', vAdv:'Adivinha Quem', vRpg:'Aventura de Luísa'};
+const ORD = ['vHome','vMem','vPuz','vDif','vAte','vPal','vNum','vAdv','vRpg'];
 let atual='vHome';
 /* Origin-aware animation: guarda onde o dedo tocou para a tela nascer dali. */
 let origemToque=null;
@@ -846,6 +911,7 @@ function irPara(id){
   if(id==='vAte') novoAtelie(true);
   if(id==='vPal') novaRodadaPal();
   if(id==='vNum') novaRodadaNum();
+  if(id==='vAdv') novaRodadaAdv();
   if(id==='vRpg') RPG.abrir(); else RPG.fechar();
 }
 /* Character-select: o cartão escolhido sobe e os outros recuam por um instante
@@ -1495,7 +1561,185 @@ function responder(botao, valor){
   }
 }
 
-/* =================== 7) AVENTURA (RPG) =================== */
+
+/* =================== 7) ADIVINHA QUEM ===================
+   Dedução por eliminação. O app guarda um rosto secreto, ela pergunta e derruba
+   quem não combina. Solo: no tabuleiro original são dois jogadores, mas aqui ela
+   joga sozinha no iPad.
+
+   Os rostos são desenhados por código, e é isso que torna o jogo possível: eu
+   preciso controlar os atributos para que cada pergunta corte o conjunto limpo.
+   Emoji não dá esse controle.
+
+   Tom de pele é único de propósito: transformar aparência de pessoa em pergunta
+   de quiz é uma escolha ruim, e cabelo/olhos/acessório já bastam para deduzir. */
+const ADV_CAB  = {loiro:'#F0C24B', castanho:'#8B5A2B', ruivo:'#D2601A', preto:'#3A2E39'};
+const ADV_OLHO = {azul:'#3A86D6', castanho:'#7A4A22', verde:'#3E9B5F'};
+const ADV_PELE = '#F7D3B6';
+const ADV_CHAPEUS = ['#E5484D','#2F7DD1','#3FBE72'];
+
+const ADV_PERG = [
+  {t:'🟨 Loiro?',        ok:f=>f.cab==='loiro'},
+  {t:'🟫 Castanho?',     ok:f=>f.cab==='castanho'},
+  {t:'🟧 Ruivo?',        ok:f=>f.cab==='ruivo'},
+  {t:'⬛ Preto?',        ok:f=>f.cab==='preto'},
+  {t:'💇 Cabelo longo?', ok:f=>f.est==='longo'},
+  {t:'✂️ Cabelo curto?', ok:f=>f.est==='curto'},
+  {t:'🎀 Maria-chiquinha?', ok:f=>f.est==='rabo'},
+  {t:'🔵 Olho azul?',    ok:f=>f.olho==='azul'},
+  {t:'🟤 Olho castanho?',ok:f=>f.olho==='castanho'},
+  {t:'🟢 Olho verde?',   ok:f=>f.olho==='verde'},
+  {t:'🕶️ Usa óculos?',   ok:f=>f.oculos},
+  {t:'🎩 Usa chapéu?',   ok:f=>f.chapeu},
+  {t:'🟠 Tem sardas?',   ok:f=>f.sardas}
+];
+
+let advN=12, advFaces=[], advSecreto=null, advFeitas=[], advNPerg=0, advModoAdivinhar=false;
+
+document.querySelectorAll('#advChips .chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('#advChips .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); advN=+c.dataset.n; beep(700,.08); novaRodadaAdv();
+}));
+document.getElementById('advNovo').addEventListener('click',()=>{beep(700,.08);novaRodadaAdv()});
+document.getElementById('advAdivinhar').addEventListener('click',()=>{
+  advModoAdivinhar=!advModoAdivinhar; beep(advModoAdivinhar?880:520,.09);
+  document.getElementById('advGrade').classList.toggle('adivinhando',advModoAdivinhar);
+  document.getElementById('advAjuda').textContent = advModoAdivinhar
+    ? 'Toque no rosto que você acha que é o secreto.'
+    : 'Toque numa pergunta. Depois derrube quem não combina.';
+});
+
+function desenhaRosto(cx, f, S){
+  const px = S/40;                       /* desenho pensado numa grade de 40×40 */
+  const R = (x,y,w,h,cor)=>{ cx.fillStyle=cor; cx.fillRect(Math.round(x*px),Math.round(y*px),Math.ceil(w*px),Math.ceil(h*px)); };
+  cx.clearRect(0,0,S,S);
+  const cor = ADV_CAB[f.cab];
+
+  /* Três silhuetas que têm de ser distinguíveis de relance, senão ela não
+     consegue eliminar e a rodada empaca:
+       curto  só o topo
+       longo  massa atrás descendo até embaixo, laterais compridas
+       rabo   dois volumes saindo PARA FORA da cabeça, na altura da orelha */
+  if(f.est==='longo'){ R(8,12,24,26,cor); }
+
+  R(11,11,18,21,ADV_PELE);               /* rosto */
+  R(9,19,2,5,ADV_PELE); R(29,19,2,5,ADV_PELE);   /* orelhas */
+
+  R(10,8,20,6,cor);                      /* cabelo topo */
+  if(f.est==='longo'){ R(10,8,4,18,cor); R(26,8,4,18,cor); }
+  if(f.est==='rabo'){ R(2,15,8,10,cor); R(30,15,8,10,cor);
+                      R(4,13,4,3,cor);  R(32,13,4,3,cor); }
+
+  if(f.sardas){ [[13,25],[15,26],[24,25],[26,26]].forEach(([x,y])=>R(x,y,1,1,'#D98A5F')); }
+  R(16,28,8,2,'#B5476B');                /* boca */
+  R(15,20,3,3,ADV_OLHO[f.olho]); R(22,20,3,3,ADV_OLHO[f.olho]);
+
+  if(f.oculos){
+    R(12,18,8,7,'#3B2340'); R(20,18,8,7,'#3B2340');
+    R(13,19,6,5,'#EAF4FF'); R(21,19,6,5,'#EAF4FF');
+    R(15,20,3,3,ADV_OLHO[f.olho]); R(22,20,3,3,ADV_OLHO[f.olho]);
+  }
+  if(f.chapeu){ const c=ADV_CHAPEUS[f.chapeuCor]; R(6,6,28,3,c); R(11,1,18,6,c); R(11,5,18,2,'rgba(0,0,0,.18)'); }
+}
+
+function novaRodadaAdv(){
+  advFeitas=[]; advNPerg=0; advModoAdivinhar=false;
+  document.getElementById('advGrade').classList.remove('adivinhando');
+  document.getElementById('advResp').innerHTML='';
+  document.getElementById('advPerg').textContent='0';
+  document.getElementById('advAjuda').textContent='Toque numa pergunta. Depois derrube quem não combina.';
+
+  /* Combinações distintas: dois rostos iguais tornariam a rodada insolúvel. */
+  const vistos=new Set(); advFaces=[];
+  let guarda=0;
+  while(advFaces.length<advN && guarda++<4000){
+    const f={ cab:['loiro','castanho','ruivo','preto'][rnd(0,3)],
+              est:['curto','longo','rabo'][rnd(0,2)],
+              olho:['azul','castanho','verde'][rnd(0,2)],
+              oculos:Math.random()<.4, chapeu:Math.random()<.35,
+              sardas:Math.random()<.4, chapeuCor:rnd(0,2), fora:false };
+    const k=[f.cab,f.est,f.olho,f.oculos,f.chapeu,f.sardas].join('|');
+    if(vistos.has(k)) continue;
+    vistos.add(k); advFaces.push(f);
+  }
+  advSecreto = advFaces[rnd(0,advFaces.length-1)];
+
+  const g=document.getElementById('advGrade'); g.innerHTML='';
+  advFaces.forEach((f,i)=>{
+    const b=document.createElement('button');
+    b.className='advRosto'; b.style.setProperty('--i',i);
+    b.setAttribute('aria-label','Rosto '+(i+1));
+    const cv=document.createElement('canvas'); cv.width=80; cv.height=80;
+    b.appendChild(cv); desenhaRosto(cv.getContext('2d'), f, 80);
+    b.addEventListener('click',()=>tocarRosto(f,b));
+    g.appendChild(b);
+  });
+
+  const q=document.getElementById('advPerguntas'); q.innerHTML='';
+  ADV_PERG.forEach((pg,i)=>{
+    const b=document.createElement('button');
+    b.className='advQ'; b.textContent=pg.t; b.dataset.i=i;
+    b.addEventListener('click',()=>perguntar(i,b));
+    q.appendChild(b);
+  });
+  contarPe();
+}
+
+/* Um rosto só pode ser derrubado se JÁ existe resposta que o descarta.
+   Sem isso ela derrubaria o secreto por engano e a rodada morreria sem saída —
+   é a versão deste jogo da regra de nunca deixar a criança travada. */
+const advPodeSer = f => advFeitas.every(r => ADV_PERG[r.i].ok(f) === r.sim);
+
+function perguntar(i, botao){
+  if(advFeitas.some(r=>r.i===i)) return;
+  const sim = ADV_PERG[i].ok(advSecreto);
+  advFeitas.push({i,sim}); advNPerg++;
+  document.getElementById('advPerg').textContent=advNPerg;
+  botao.classList.add('usada');
+  sim?sOk():beep(300,.16,'triangle',.14);
+  document.getElementById('advResp').innerHTML =
+    '<span class="'+(sim?'sim':'nao')+'">'+ADV_PERG[i].t.replace('?','')+' → <b>'+(sim?'SIM 👍':'NÃO 👎')+'</b></span>';
+  document.getElementById('advAjuda').textContent = sim
+    ? 'Derrube quem NÃO tem isso.' : 'Derrube quem TEM isso.';
+}
+
+function tocarRosto(f, botao){
+  if(advModoAdivinhar){
+    advModoAdivinhar=false;
+    document.getElementById('advGrade').classList.remove('adivinhando');
+    if(f===advSecreto) return venceuAdv();
+    botao.classList.add('nega'); sNo();
+    setTimeout(()=>botao.classList.remove('nega'),450);
+    document.getElementById('advAjuda').textContent='Não é essa. Continue perguntando!';
+    return;
+  }
+  if(f.fora){                                  /* levantar de volta */
+    f.fora=false; botao.classList.remove('fora'); beep(520,.07); contarPe(); return;
+  }
+  if(advPodeSer(f)){
+    botao.classList.add('nega'); sNo();
+    setTimeout(()=>botao.classList.remove('nega'),450);
+    document.getElementById('advAjuda').textContent =
+      advFeitas.length ? 'Essa ainda pode ser! Olha as respostas.' : 'Pergunte alguma coisa primeiro.';
+    return;
+  }
+  f.fora=true; botao.classList.add('fora'); sFlip(); contarPe();
+}
+
+function contarPe(){
+  const pe=advFaces.filter(f=>!f.fora);
+  document.getElementById('advPe').textContent=pe.length;
+  if(pe.length===1 && pe[0]===advSecreto) setTimeout(venceuAdv,420);
+}
+
+function venceuAdv(){
+  advFaces.forEach((f,i)=>{ if(f!==advSecreto){ f.fora=true;
+    document.querySelectorAll('.advRosto')[i].classList.add('fora'); } });
+  document.querySelectorAll('.advRosto')[advFaces.indexOf(advSecreto)].classList.add('alvo');
+  vencer('🔍','Achou!', 'Você descobriu com '+advNPerg+(advNPerg===1?' pergunta.':' perguntas.'), novaRodadaAdv);
+}
+
+/* =================== 8) AVENTURA (RPG) =================== */
 const ATLAS_URL = "data:image/png;base64,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";
 /* ==================================================================
    MOTOR RPG — Mundo da Luísa  ·  v2
