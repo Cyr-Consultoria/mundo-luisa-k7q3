@@ -67,8 +67,11 @@ function checa(cond, nome, det) { cond ? ok(nome) : falha(nome, det); }
 
   // dispensar: pointerdown, não clique
   await p.locator('#abertura').dispatchEvent('pointerdown');
-  await p.waitForTimeout(700);
-  checa(!(await p.locator('#abertura').isVisible()), 'toque dispensa a abertura');
+  // Espera pelo ESTADO, não por um relógio: a saída leva 470ms e num Mac ocupado
+  // passava de 700ms, fazendo a verificação falhar sem nada estar quebrado.
+  const saiu = await p.locator('#abertura').waitFor({ state: 'hidden', timeout: 5000 })
+    .then(() => true).catch(() => false);
+  checa(saiu, 'toque dispensa a abertura');
   const parou = await p.evaluate(() => AB._fechada());
   checa(parou, 'loop da abertura foi cancelado ao sair');
 
